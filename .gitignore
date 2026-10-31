@@ -1,0 +1,9 @@
+# compiled binaries
+matmul
+compare
+
+# large generated inputs (regenerate with gen.py)
+data/
+
+# python cache
+__pycache__/
