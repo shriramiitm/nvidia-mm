@@ -1,4 +1,4 @@
-// matmul.cu -- Week 1: single-threaded CPU baseline + naive CUDA kernel.
+// matmul.cu -- single-threaded CPU (Week 1), naive CUDA (Week 1), shared-memory tiled CUDA (Week 2).
 //
 //   ./matmul --impl {cpu,naive,tiled,padded} --input IN.bin --output OUT.bin [--tile T]
 //
@@ -6,7 +6,7 @@
 //   --bench  --trials N (GPU, default 20)  --warmup W (GPU, default 3)
 //            --cpu-trials C (default 3)    (--output is optional with --bench)
 //
-// tiled / padded are placeholders until Weeks 2-3.
+// padded is a placeholder until Week 3.
 
 #include <cuda_runtime.h>
 
@@ -159,8 +159,9 @@ static void cpu_matmul(const float* A, const float* B, float* C, int M, int K, i
     }
 }
 
-// ---------------------------------------------------------------- naive GPU
+// ---------------------------------------------------------------- GPU kernels
 
+// ---- V1 (Week 1): naive ----------------------------------------------------
 // One thread = one output element C[row][col], full K-length dot product
 // straight from global memory. col comes from threadIdx.x, so the 32 threads
 // of a warp read consecutive B[k][col..col+31] and write consecutive C
@@ -179,16 +180,94 @@ __global__ void matmul_naive(const float* A, const float* B, float* C, int M, in
     }
 }
 
+// ---- V2 (Week 2): shared-memory tiled --------------------------------------
+// A block of TILE x TILE threads owns one TILE x TILE tile of C. It walks along
+// K in steps of TILE. In each step the block cooperatively loads ONE tile of A
+// and ONE tile of B into shared memory (each thread loads one element of each),
+// then every thread does TILE multiply-adds out of shared memory. Each element
+// fetched from global memory is therefore used by TILE threads instead of 1.
+//
+//   global loads per output element:  naive 2*K   ->   tiled 2*K/TILE
+//
+// Edge handling: out-of-range tile elements are loaded as 0.0f, which adds
+// nothing to the sum, so K, M, N need not be multiples of TILE. All threads
+// (even ones outside C) must reach both __syncthreads(), so there is no early
+// return; only the final store is guarded.
+template <int TILE>
+__global__ void matmul_tiled(const float* __restrict__ A, const float* __restrict__ B,
+                             float* __restrict__ C, int M, int K, int N) {
+    __shared__ float As[TILE][TILE];
+    __shared__ float Bs[TILE][TILE];
+
+    const int tx = threadIdx.x, ty = threadIdx.y;
+    const int row = blockIdx.y * TILE + ty;
+    const int col = blockIdx.x * TILE + tx;
+
+    float acc = 0.0f;
+    const int numTiles = (K + TILE - 1) / TILE;
+    for (int t = 0; t < numTiles; t++) {
+        const int aCol = t * TILE + tx;  // column of A this thread loads
+        const int bRow = t * TILE + ty;  // row of B this thread loads
+        // consecutive tx -> consecutive addresses in both loads (coalesced)
+        As[ty][tx] = (row < M && aCol < K) ? A[(size_t)row * K + aCol] : 0.0f;
+        Bs[ty][tx] = (bRow < K && col < N) ? B[(size_t)bRow * N + col] : 0.0f;
+        __syncthreads();  // tile fully loaded before anyone reads it
+
+#pragma unroll
+        for (int k = 0; k < TILE; k++) acc += As[ty][k] * Bs[k][tx];
+        __syncthreads();  // everyone done reading before the tile is overwritten
+    }
+    if (row < M && col < N) C[(size_t)row * N + col] = acc;
+}
+
+// Tile sizes must fit the device: TILE*TILE threads per block and
+// 2*TILE*TILE floats of shared memory.
+static void check_tile_resources(int tile) {
+    int dev = 0, maxThreads = 0, maxShared = 0;
+    CUDA_CHECK(cudaGetDevice(&dev));
+    CUDA_CHECK(cudaDeviceGetAttribute(&maxThreads, cudaDevAttrMaxThreadsPerBlock, dev));
+    CUDA_CHECK(cudaDeviceGetAttribute(&maxShared, cudaDevAttrMaxSharedMemoryPerBlock, dev));
+    size_t shared = 2 * (size_t)tile * tile * sizeof(float);
+    if (tile * tile > maxThreads)
+        die("--tile %d needs %d threads per block but the device allows %d", tile, tile * tile, maxThreads);
+    if (shared > (size_t)maxShared)
+        die("--tile %d needs %zu bytes of shared memory but the device allows %d", tile, shared, maxShared);
+}
+
+static void launch_kernel(const std::string& impl, int tile, const float* dA, const float* dB, float* dC,
+                          int M, int K, int N) {
+    if (impl == "naive") {
+        dim3 block(NAIVE_BLOCK, NAIVE_BLOCK);
+        dim3 grid((N + block.x - 1) / block.x, (M + block.y - 1) / block.y);
+        matmul_naive<<<grid, block>>>(dA, dB, dC, M, K, N);
+    } else if (impl == "tiled") {
+        dim3 block(tile, tile);
+        dim3 grid((N + tile - 1) / tile, (M + tile - 1) / tile);
+        switch (tile) {
+            case 8:  matmul_tiled<8><<<grid, block>>>(dA, dB, dC, M, K, N); break;
+            case 16: matmul_tiled<16><<<grid, block>>>(dA, dB, dC, M, K, N); break;
+            case 32: matmul_tiled<32><<<grid, block>>>(dA, dB, dC, M, K, N); break;
+            default: die("unsupported --tile %d", tile);
+        }
+    } else {
+        die("implementation '%s' has no GPU kernel", impl.c_str());
+    }
+}
+
 struct GpuRunTimes {
     double kernel_ms;  // CUDA events around the kernel only
     double e2e_ms;     // host clock: malloc + H2D + kernel + D2H + free
 };
 
 // One complete GPU run: allocate, copy in, launch, copy out, free.
-static GpuRunTimes gpu_run_naive(const float* hA, const float* hB, float* hC, int M, int K, int N) {
+static GpuRunTimes gpu_run(const std::string& impl, int tile, const float* hA, const float* hB, float* hC,
+                           int M, int K, int N) {
     const size_t bytesA = (size_t)M * K * sizeof(float);
     const size_t bytesB = (size_t)K * N * sizeof(float);
     const size_t bytesC = (size_t)M * N * sizeof(float);
+
+    const int blockY = (impl == "tiled") ? tile : NAIVE_BLOCK;
+    if ((M + blockY - 1) / blockY > 65535) die("M=%d is too large for this launch configuration", M);
 
     double t0 = now_ms();
 
@@ -205,15 +284,11 @@ static GpuRunTimes gpu_run_naive(const float* hA, const float* hB, float* hC, in
     CUDA_CHECK(cudaMemcpy(dA, hA, bytesA, cudaMemcpyHostToDevice));
     CUDA_CHECK(cudaMemcpy(dB, hB, bytesB, cudaMemcpyHostToDevice));
 
-    dim3 block(NAIVE_BLOCK, NAIVE_BLOCK);
-    dim3 grid((N + block.x - 1) / block.x, (M + block.y - 1) / block.y);
-    if (grid.y > 65535) die("M=%d is too large for this launch configuration", M);
-
     cudaEvent_t evStart, evStop;
     CUDA_CHECK(cudaEventCreate(&evStart));
     CUDA_CHECK(cudaEventCreate(&evStop));
     CUDA_CHECK(cudaEventRecord(evStart));
-    matmul_naive<<<grid, block>>>(dA, dB, dC, M, K, N);
+    launch_kernel(impl, tile, dA, dB, dC, M, K, N);
     CUDA_CHECK(cudaGetLastError());          // launch errors (bad config, ...)
     CUDA_CHECK(cudaEventRecord(evStop));
     CUDA_CHECK(cudaEventSynchronize(evStop));  // surfaces errors raised during execution
@@ -237,9 +312,8 @@ static GpuRunTimes gpu_run_naive(const float* hA, const float* hB, float* hC, in
 int main(int argc, char** argv) {
     Args a = parse_args(argc, argv);
 
-    if (a.impl == "tiled" || a.impl == "padded") {
-        fprintf(stderr, "error: implementation '%s' is not implemented yet (planned for Weeks 2-3)\n",
-                a.impl.c_str());
+    if (a.impl == "padded") {
+        fprintf(stderr, "error: implementation 'padded' is not implemented yet (planned for Week 3)\n");
         return 2;
     }
 
@@ -266,14 +340,15 @@ int main(int argc, char** argv) {
             t.push_back(now_ms() - t0);
         }
         kernel_ms = e2e_ms = median(t);  // CPU: multiplication only, no transfers
-    } else {  // naive
+    } else {  // naive or tiled
         CUDA_CHECK(cudaFree(0));  // force context creation; clear error if no GPU
+        if (a.impl == "tiled") check_tile_resources(a.tile);
         trials_used = a.bench ? a.trials : 1;
         if (a.bench)
-            for (int i = 0; i < a.warmup; i++) gpu_run_naive(p.A.data(), p.B.data(), C.data(), M, K, N);
+            for (int i = 0; i < a.warmup; i++) gpu_run(a.impl, a.tile, p.A.data(), p.B.data(), C.data(), M, K, N);
         std::vector<double> tk, te;
         for (int i = 0; i < trials_used; i++) {
-            GpuRunTimes r = gpu_run_naive(p.A.data(), p.B.data(), C.data(), M, K, N);
+            GpuRunTimes r = gpu_run(a.impl, a.tile, p.A.data(), p.B.data(), C.data(), M, K, N);
             tk.push_back(r.kernel_ms);
             te.push_back(r.e2e_ms);
         }
@@ -285,13 +360,14 @@ int main(int argc, char** argv) {
 
     const double kernel_gflops = flops / (kernel_ms * 1e6);
     const double e2e_gflops = flops / (e2e_ms * 1e6);
+    const std::string tileStr = (a.impl == "tiled") ? std::to_string(a.tile) : "NA";
     if (a.bench) {
         // impl,M,K,N,tile,trials,kernel_ms,e2e_ms,kernel_gflops,e2e_gflops
-        printf("%s,%d,%d,%d,NA,%d,%.4f,%.4f,%.2f,%.2f\n", a.impl.c_str(), M, K, N, trials_used,
-               kernel_ms, e2e_ms, kernel_gflops, e2e_gflops);
+        printf("%s,%d,%d,%d,%s,%d,%.4f,%.4f,%.2f,%.2f\n", a.impl.c_str(), M, K, N, tileStr.c_str(),
+               trials_used, kernel_ms, e2e_ms, kernel_gflops, e2e_gflops);
     } else {
-        printf("impl=%s M=%d K=%d N=%d kernel_ms=%.4f e2e_ms=%.4f kernel_gflops=%.2f\n", a.impl.c_str(),
-               M, K, N, kernel_ms, e2e_ms, kernel_gflops);
+        printf("impl=%s tile=%s M=%d K=%d N=%d kernel_ms=%.4f e2e_ms=%.4f kernel_gflops=%.2f\n",
+               a.impl.c_str(), tileStr.c_str(), M, K, N, kernel_ms, e2e_ms, kernel_gflops);
     }
     return 0;
 }

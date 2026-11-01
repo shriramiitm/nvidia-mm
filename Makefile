@@ -22,4 +22,7 @@ bench: all
 clean:
 	rm -f matmul compare
 
-.PHONY: all test bench clean
+.PHONY: all test bench profile clean
+
+profile: all
+	bash profile.sh

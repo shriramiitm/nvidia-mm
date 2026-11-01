@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 # Automated correctness suite: for every shape, generate input (fixed seed),
 # run the CPU reference, check the CPU against NumPy, then compare every GPU
-# implementation against the CPU output.
-#   bash run_tests.sh              # default: naive
-#   IMPLS="naive tiled padded" bash run_tests.sh   # once Weeks 2-3 are done
+# implementation (and every tile size) against the CPU output.
+#   bash run_tests.sh                                  # default: naive tiled
+#   IMPLS="naive tiled padded" bash run_tests.sh       # once Week 3 is done
+#   TILES="8 16 32" bash run_tests.sh                  # tile sizes for tiled/padded
 set -u
 cd "$(dirname "$0")"
-IMPLS=${IMPLS:-"naive"}
+IMPLS=${IMPLS:-"naive tiled"}
+TILES=${TILES:-"8 16 32"}
 SEED=42
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
@@ -33,7 +35,7 @@ pass=0
 fail=0
 report() {  # report STATUS LABEL DETAIL
   if [ "$1" = PASS ]; then pass=$((pass + 1)); else fail=$((fail + 1)); fi
-  printf '[%s] %-34s %s\n' "$1" "$2" "$3"
+  printf '[%s] %-40s %s\n' "$1" "$2" "$3"
 }
 
 for s in "${SHAPES[@]}"; do
@@ -49,11 +51,17 @@ for s in "${SHAPES[@]}"; do
     && report PASS "cpu vs numpy $shape" "$out" || report FAIL "cpu vs numpy $shape" "$out"
 
   for impl in $IMPLS; do
-    if ! ./matmul --impl "$impl" --input "$TMP/in.bin" --output "$TMP/out.bin" >/dev/null; then
-      report FAIL "$impl run $shape" "program failed"; continue
-    fi
-    out=$(./compare "$TMP/in.bin" "$TMP/ref.bin" "$TMP/out.bin") \
-      && report PASS "$impl vs cpu $shape" "$out" || report FAIL "$impl vs cpu $shape" "$out"
+    tiles="16"   # ignored by naive
+    case "$impl" in tiled|padded) tiles="$TILES" ;; esac
+    for t in $tiles; do
+      label="$impl"
+      case "$impl" in tiled|padded) label="$impl T=$t" ;; esac
+      if ! ./matmul --impl "$impl" --tile "$t" --input "$TMP/in.bin" --output "$TMP/out.bin" >/dev/null; then
+        report FAIL "$label run $shape" "program failed"; continue
+      fi
+      out=$(./compare "$TMP/in.bin" "$TMP/ref.bin" "$TMP/out.bin") \
+        && report PASS "$label vs cpu $shape" "$out" || report FAIL "$label vs cpu $shape" "$out"
+    done
   done
 done
 
@@ -62,7 +70,7 @@ if ./matmul --impl bogus --input "$TMP/in.bin" --output "$TMP/x.bin" 2>/dev/null
   report FAIL "reject bad --impl" ""; else report PASS "reject bad --impl" ""; fi
 if ./matmul --impl cpu --input /nonexistent.bin --output "$TMP/x.bin" 2>/dev/null; then
   report FAIL "reject missing input file" ""; else report PASS "reject missing input file" ""; fi
-if ./matmul --impl cpu --input "$TMP/in.bin" --output "$TMP/x.bin" --tile 7 2>/dev/null; then
+if ./matmul --impl tiled --input "$TMP/in.bin" --output "$TMP/x.bin" --tile 7 2>/dev/null; then
   report FAIL "reject bad --tile" ""; else report PASS "reject bad --tile" ""; fi
 
 echo
