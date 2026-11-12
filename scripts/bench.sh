@@ -4,7 +4,7 @@
 #   IMPLS="cpu naive tiled padded tiled_ta padded_ta" TILES="8 16 32" TRIALS=20 bash scripts/bench.sh
 set -eu
 cd "$(dirname "$0")/.."   # run from the repo root
-IMPLS=${IMPLS:-"cpu naive tiled padded tiled_ta padded_ta"}
+IMPLS=${IMPLS:-"cpu naive tiled padded tiled_ta padded_ta regtile"}
 TILES=${TILES:-"8 16 32"}
 TRIALS=${TRIALS:-20}
 WARMUP=${WARMUP:-3}

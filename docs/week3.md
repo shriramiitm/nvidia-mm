@@ -5,13 +5,12 @@
 **Milestone:** present a second profiler-guided improvement, and explain whether padding helps on the selected GPU.
 
 > **Status of the numbers in this file.**
-> - Sections 1–4 come from the code and from `scripts/bank_model.py`, which counts bank conflicts exactly for the access patterns as written. These are **predictions**.
-> - Sections 5–7 are **tables to fill in** with Nsight Compute and benchmark results from the GPU machine.
-> - The kernels have **not been compiled with nvcc or run on a GPU yet**. What was checked without a GPU:
->   - clang parses `src/matmul.cu` cleanly in both host and device mode (using a stub CUDA header).
->   - A pure-Python emulation of all 12 kernel variants (3 tile sizes × padding on/off × transposed A on/off) matches a reference result on 10 shapes, including 1×1×1, K = 1, and sizes 31/33.
->
->   `make test` on the GPU is still required.
+> - Sections 1–4 are the analysis and predictions, written before any GPU run. They come from the code
+>   and from `scripts/bank_model.py`, which counts bank conflicts for the access patterns as written.
+> - Sections 6–8 are **measured** on a Tesla T4 (Google Colab, 12 Nov 2026, CUDA 13.0). Raw data:
+>   `results/results.csv`, `results/profile/`, `results/profile_summary.csv`, `results/profile/matmul.sass`.
+> - **Every bank-conflict prediction matched the profiler exactly** (section 6a).
+> - The correctness suite has not been logged on the GPU yet (see section 9).
 
 ---
 
@@ -123,7 +122,7 @@ TILE = 8 works the same way across four rows. At TILE = 32 a warp covers one row
 
 These are **store** conflicts: 2 store instructions per tile step versus `2·TILE` load instructions, so the expected slowdown is small. It's still the honest answer the spec asks for. On this kernel, padding has nothing to fix, and at T = 8/16 it makes the stores slightly worse.
 
-### 4b. A second possible cost: losing 128-bit shared loads (hypothesis)
+### 4b. A second cost: losing 128-bit shared loads (hypothesis, **confirmed** in section 6)
 
 In the inner loop, `As[ty][k], As[ty][k+1], …` are consecutive and the same for every thread in a row. With `LD = TILE`, each row starts on a 16-byte boundary, so the compiler *may* merge four of these reads into one `LDS.128`, cutting the number of As load instructions by 4×.
 
@@ -159,38 +158,84 @@ python3 scripts/bank_model.py > results/bank_model.txt   # predictions, to sit n
 
 ---
 
-## 6. Tables to fill in
+## 6. Measured results
 
-### 6a. Bank conflicts: predicted vs. measured (1024³)
+### 6a. Bank conflicts: predicted vs. measured
 
-| Variant | T | Predicted st conflicts (As+Bs) | Measured st | Predicted ld | Measured ld | Shared ld instructions |
-|---|---|---|---|---|---|---|
-| tiled | 16 | 0 | | 0 | | |
-| padded | 16 | 4,194,304 | | 0 | | |
-| tiled | 32 | 0 | | 0 | | |
-| padded | 32 | 0 | | 0 | | |
-| tiled_ta | 32 | 32,505,856 | | 0 | | |
-| padded_ta | 32 | 0 | | 0 | | |
+1024×1024×1024. Store conflicts are As + Bs together, because Nsight Compute reports one total.
 
-If measured and predicted disagree, explain why. Likely causes: 128-bit loads (section 4b), or the irregular shape having fewer full blocks.
-
-### 6b. Timing: tiled vs. padded (kernel-only, median of 20)
-
-| Shape | T | tiled (ms) | padded (ms) | padded / tiled | tiled_ta (ms) | padded_ta (ms) | padded_ta / tiled_ta |
+| Variant | T | Predicted st conflicts | **Measured st** | Predicted ld | **Measured ld** | Shared ld instructions | Shared ld wavefronts |
 |---|---|---|---|---|---|---|---|
-| 1024³ | 16 | | | | | | |
-| 1024³ | 32 | | | | | | |
-| 4096³ | 32 | | | | | | |
-| 2048×512×4096 | 32 | | | | | | |
-| 1000×513×769 | 16 | | | | | | |
-| 1000×513×769 | 32 | | | | | | |
+| tiled | 8 | 0 | **0** | 0 | **0** | 41.9 M | 50.3 M |
+| tiled | 16 | 0 | **0** | 0 | **0** | 41.9 M | 50.3 M |
+| tiled | 32 | 0 | **0** | 0 | **0** | 41.9 M | 50.3 M |
+| padded | 8 | 8,388,608 | **8,388,608** | 0 | **0** | 67.1 M | 67.1 M |
+| padded | 16 | 4,194,304 | **4,194,304** | 0 | **0** | 67.1 M | 67.1 M |
+| padded | 32 | 0 | **0** | 0 | **0** | 67.1 M | 67.1 M |
+| tiled_ta | 8 | 4,194,304 | **4,194,304** | 0 | **0** | 67.1 M | 67.1 M |
+| tiled_ta | 16 | 14,680,064 | **14,680,064** | 0 | **0** | 67.1 M | 67.1 M |
+| tiled_ta | 32 | 32,505,856 | **32,505,856** | 0 | **0** | 67.1 M | 67.1 M |
+| padded_ta | 8 | 8,388,608 | **8,388,608** | 0 | **0** | 67.1 M | 67.1 M |
+| padded_ta | 16 | 4,194,304 | **4,194,304** | 0 | **0** | 67.1 M | 67.1 M |
+| padded_ta | 32 | 0 | **0** | 0 | **0** | 67.1 M | 67.1 M |
 
-### 6c. Bottleneck after padding (from the "Speed of Light" and "Memory Workload" sections)
+The irregular shape (1000×513×769) matches too. For example, padded T=16: 3087 blocks × 33 tile steps × 16 =
+**1,629,936** predicted and measured. tiled_ta T=32: 800 × 17 × 992 = **13,491,200** predicted and measured.
 
-| Kernel (1024³, best T) | Compute % | Memory % | Achieved occupancy % | Shared-memory pipe utilisation | Limiting resource |
-|---|---|---|---|---|---|
-| tiled | | | | | |
-| padded | | | | | |
+**The SASS confirms section 4b** (`results/profile/matmul.sass`). Shared-memory instructions per unrolled
+tile step:
+
+| Kernel (T = 16) | `LDS.U.128` | `LDS.U` | Shared loads per tile step |
+|---|---|---|---|
+| tiled | 4 (the As row: 16 floats as 4 × 128-bit) | 16 (Bs) | 20 |
+| padded, tiled_ta, padded_ta | 0 | 32 | 32 |
+
+32 / 20 = 1.6, which is exactly the measured instruction ratio 67.1 M / 41.9 M. T = 8 and T = 32 show the
+same pattern. The odd row length `T + 1` breaks 16-byte alignment, so the compiler can't vectorize the
+`As` reads. In `tiled_ta` the `As[k][ty]` reads come from different rows, so they can't be vectorized either.
+
+### 6b. Timing: tiled vs. padded (benchmark, kernel-only, median of 20)
+
+| Shape | T | tiled (ms) | padded (ms) | **padded / tiled** | tiled_ta (ms) | padded_ta (ms) | **tiled_ta / padded_ta** |
+|---|---|---|---|---|---|---|---|
+| 256×256×256 | 16 | 0.056 | 0.061 | 1.08× slower | 0.064 | 0.060 | 1.06× faster |
+| 256×256×256 | 32 | 0.049 | 0.059 | 1.20× slower | 0.079 | 0.059 | 1.33× faster |
+| 1024×1024×1024 | 16 | 2.155 | 2.834 | 1.32× slower | 3.170 | 2.831 | 1.12× faster |
+| 1024×1024×1024 | 32 | 2.062 | 2.665 | 1.29× slower | 3.656 | 2.657 | 1.38× faster |
+| 4096×4096×4096 | 16 | 199.1 | 251.1 | 1.26× slower | 272.2 | 258.9 | 1.05× faster |
+| 4096×4096×4096 | 32 | 154.4 | 194.5 | 1.26× slower | 243.3 | 199.6 | 1.22× faster |
+| 2048×512×4096 | 16 | 9.039 | 12.40 | 1.37× slower | 14.02 | 12.62 | 1.11× faster |
+| 2048×512×4096 | 32 | 8.302 | 10.98 | 1.32× slower | 14.26 | 10.93 | 1.31× faster |
+| 1000×513×769 | 16 | 0.859 | 1.147 | 1.34× slower | 1.242 | 1.122 | 1.11× faster |
+| 1000×513×769 | 32 | 0.827 | 1.071 | 1.30× slower | 1.478 | 1.065 | 1.39× faster |
+
+In both comparisons, padding is the only change.
+
+### 6c. What limits the tiled kernels: time follows shared-memory wavefronts
+
+Profiler, 1024³ (kernel times at base clock):
+
+| Kernel | T | ncu time (ms) | Shared wavefronts, ld + st | **ns per million wavefronts** | SM / memory throughput | Occupancy |
+|---|---|---|---|---|---|---|
+| tiled | 16 | 5.78 | 54.5 M | 106 | 75% | 98.7% |
+| tiled | 32 | 5.31 | 52.4 M | 101 | 74% | 99.9% |
+| padded | 16 | 7.62 | 75.5 M | 101 | 85% | 98.7% |
+| padded | 32 | 6.94 | 69.2 M | 100 | 88% | 99.96% |
+| tiled_ta | 16 | 8.51 | 86.0 M | 99 | 76% | 98.7% |
+| tiled_ta | 32 | 9.68 | 101.7 M | 95 | 63% | 100% |
+| padded_ta | 32 | 6.92 | 69.2 M | 100 | 88% | 99.96% |
+| tiled | 8 | 9.10 | 58.7 M | 155 | 55% | 98.7% |
+
+For T = 16 and 32, **every variant takes 95–106 ns per million shared-memory wavefronts**. The same holds on
+1000×513×769 (93–107). So the kernel time is set by how many passes the shared-memory pipe has to make,
+regardless of whether those passes come from bank conflicts (tiled_ta) or from extra un-vectorized
+instructions (padded). Plot: `results/plots/time_vs_wavefronts.svg`.
+
+T = 8 sits above the line (135–158 ns per million): with 64-thread blocks, the `__syncthreads()` and
+per-tile-step overheads dominate rather than the shared-memory pipe.
+
+Padded runs at a **higher** throughput percentage (88% vs 74%) while being **slower**. It's doing more work
+(more instructions and wavefronts), not using the hardware better. A busy pipe is not the same as a fast kernel.
 
 ---
 
@@ -198,31 +243,96 @@ If measured and predicted disagree, explain why. Likely causes: 128-bit loads (s
 
 | # | Experiment | Hypothesis | Result | Kept? |
 |---|---|---|---|---|
-| 1 | Padding `[T][T+1]` on the tiled kernel | Tiled has no bank conflicts (section 3), so padding can't help; it adds 2-way store conflicts at T = 8/16 and may block `LDS.128` | *fill in* | *probably no* |
-| 2 | Transposed A tile, no padding (`tiled_ta`) | A 32-way store conflict at T = 32 makes it slower than tiled | *fill in* | no (it's a demonstration) |
-| 3 | Transposed A tile + padding (`padded_ta`) | Padding removes all of experiment 2's conflicts and gets back most of the lost time | *fill in* | demonstration |
-| 4 | Tile-size retune with padding (T = 8/16/32) | The best T is the same as without padding (padding costs at most 3% more shared memory, so occupancy shouldn't change) | *fill in* | |
-| 5 | **Second profiler-guided improvement** | see section 8 | *fill in* | |
+| 1 | Padding `[T][T+1]` on the tiled kernel (`padded`) | Tiled has no bank conflicts, so padding can't help; it adds 2-way store conflicts at T = 8/16 and may block `LDS.128` | **Confirmed. Padded is slower on every shape and tile size: 1.08–1.37× (1.20–1.32× at T = 32).** Conflicts match the prediction exactly. The main cost is losing `LDS.128`: 1.6× more shared load instructions, 1.33× more wavefronts. The added store conflicts are a minor share (4.2 M of 75.5 M wavefronts at T = 16) | **No.** Unsuccessful as an optimization; it's version 4 by requirement |
+| 2 | Transposed A tile, no padding (`tiled_ta`) | 32-way store conflict at T = 32 makes it slower than tiled | Confirmed: 32.5 M store conflicts; 1.58–1.79× slower than tiled at T = 32 | No (demonstration) |
+| 3 | Transposed A tile + padding (`padded_ta`) | Padding removes all of experiment 2's conflicts | **Confirmed. Conflicts 32.5 M → 0; 1.22–1.39× faster than tiled_ta at T = 32.** Timing and profile are identical to `padded`: once conflicts are gone, both are limited by the same 32 scalar loads per step | Demonstration: **padding works when there's a column access to fix** |
+| 4 | Tile size with padding | Same best T as without padding | Confirmed: T = 32 is fastest for padded on every shape too | T = 32 default |
+| 5 | **Register tiling (`regtile`)**, second profiler-guided improvement | Cut shared loads per FMA 1.25 → 0.125 (section 8) | *pending GPU run* | |
+
+**Answer to "does padding help on this GPU?"** Not for this kernel. The Week 2 tiled kernel reads shared
+memory only along rows (`As[ty][k]` broadcast, `Bs[k][tx]` consecutive), so it has no bank conflicts to
+remove. On a T4, padding makes it 8–37% slower (20–32% at the best tile size, T = 32): the odd row length stops the compiler from using
+128-bit shared loads, and at T = 8/16 it adds 2-way store conflicts. Padding *does* work exactly as
+designed on a kernel with column-wise shared accesses (`tiled_ta` → `padded_ta`: 32.5 M conflicts → 0,
+up to 1.39× faster).
 
 ---
 
 ## 8. The second profiler-guided improvement (milestone)
 
-This has to come **from the profile in section 6c**. Don't choose it in advance. The most likely outcome, and what to try for each:
+**Observation (section 6c and Week 2 section 7):**
+- Occupancy is 99–100%.
+- DRAM is at ~10% of peak; FP32 at ~13% of peak.
+- Kernel time is proportional to shared-memory wavefronts.
 
-- **If the shared-memory (LSU/MIO) pipe is the limiter** (likely): each FMA needs two shared loads (`As[ty][k]` and `Bs[k][tx]`), so the kernel is limited by shared-memory bandwidth, not FLOPs. The fix is **register tiling**: each thread computes e.g. a 1×4 or 4×4 block of C, keeping `As` values in registers and reusing them across 4 `Bs` values. That gives 4–16 FMAs per pair of shared loads. (This is the spec's first optional extension.)
-- **If occupancy or latency is the limiter** (e.g. T = 32 with 1024-thread blocks): try a smaller T, or non-square blocks.
-- **If global memory is still the limiter**: try vectorized `float4` global loads (another optional extension).
+**Diagnosis:** the tiled kernel is limited by the shared-memory pipe. Every multiply-add needs 1.25
+shared-memory loads (one scalar `Bs[k][tx]`, plus a quarter of an `LDS.128` for `As`).
 
-Record the observation → hypothesis → change → measured effect in the same format as `docs/week2.md` section 8.
+**Change: register tiling**, `--impl regtile` (the spec's first optional extension, kept as a separate
+fifth version). The code is `matmul_regtile` in `src/matmul.cu`:
+
+```
+block = 16 x 16 threads, owns a 64 x 64 tile of C;   thread (tx, ty) owns C rows ty*4..+3, cols tx*4..+3
+for k0 in 0, 8, 16, ... < K:                          # K step = 8
+    cooperatively load A[64 rows][8] -> As[k][m]  (stored TRANSPOSED, row length 64 + 4)
+    cooperatively load B[8][64 cols] -> Bs[k][n]  (zero-fill outside the matrix)
+    __syncthreads()
+    for k in 0..7:
+        a[0..3] = As[k][ty*4 .. ty*4+3]      # one float4 (128-bit) shared load
+        b[0..3] = Bs[k][tx*4 .. tx*4+3]      # one float4 (128-bit) shared load
+        acc[i][j] += a[i] * b[j]  for i, j in 0..3     # 16 FMAs, all in registers
+    __syncthreads()
+store acc[4][4] to C with a bounds check per element
+```
+
+| | tiled (T = 32) | regtile |
+|---|---|---|
+| Outputs per thread | 1 | 16 (4 × 4) |
+| Shared-memory load instructions per FMA | 1.25 (scalar + ¼ `LDS.128`) | 0.125 (2 × 128-bit per 16 FMAs) |
+| Global loads per output element | 2K/32 | 2K/64 (block tile is 64 × 64) |
+| Threads per block / shared memory per block | 1024 / 8 KiB | 256 / 4.1 KiB |
+| Registers per thread | low | higher (16 accumulators + 8 operands); `__launch_bounds__(256)` |
+
+**The Week 3 padding lesson, applied.** Storing A transposed makes each thread's 4 A values contiguous
+(one `float4` read). The cost is a column-wise store: with a 64-float row, the 8 threads writing one
+A row hit the same bank (**8-way conflict**). Padding the row to 64 **+ 4** removes the conflict *and* keeps
+every row 16-byte aligned, so the 128-bit reads stay legal. Padding by 1 would break alignment, exactly
+the cost measured for `padded` (section 6a). Checked with the same counting model as `bank_model.py`:
+PAD = 0 gives an 8-way As store, PAD = 4 gives 1-way.
+
+**Checked without a GPU:**
+- A pure-Python emulation of the kernel (real shared-memory layout, zero-fill, guarded stores) matches a
+  reference result on 9 shapes, including 1×1×1, 65×63×129, 63×9×65 and K = 1.
+- clang parses it cleanly.
+- `run_tests.sh` now covers `regtile` and has a new shape, 65×63×129: one past and one short of the 64×64
+  block, with K not a multiple of 8.
+
+**Predictions to check on the GPU:**
+- **SASS:** two `LDS.U.128` per k in `matmul_regtile`. A test compile with clang, not nvcc, split them
+  into scalar loads, so check `results/profile/matmul.sass`. If nvcc also splits them, it's still 0.5
+  scalar shared loads per FMA instead of 1.25.
+- **Shared-memory wavefronts at 1024³:** at least ~3× lower than tiled's 52.4 M, and **0 bank conflicts**.
+- **Time:** if the ~100 ns-per-million-wavefronts relationship held, ~3× faster. But a different limit will
+  probably take over first: FP32 issue rate, global-load latency with only 8 warps per block, or
+  registers limiting occupancy. **Expected: 1.5–3× faster than tiled T = 32.** The new profile will show
+  which limit it hits.
+
+| Field | Entry: register tiling |
+|---|---|
+| Observation | Shared-memory pipe is the limiter: time ∝ wavefronts (≈100 ns per million), 1.25 shared loads per FMA, occupancy 99%, DRAM ~10% |
+| Hypothesis | Computing a 4×4 block per thread from two 128-bit shared loads per k cuts shared loads per FMA 10×, wavefronts ≥3× |
+| Change | `matmul_regtile`: 64×64 block tile, BK = 8, 4×4 per thread, As transposed with row padding 4 |
+| Expected effect | Wavefronts ≥3× lower, 0 bank conflicts; kernel time 1.5–3× lower than tiled T = 32 |
+| Measured effect | *pending: run on the GPU* |
+| Conclusion | *pending* |
 
 ---
 
 ## 9. Week 3 milestone checklist
 
-1. ☐ `make test` passes for tiled, padded, tiled_ta and padded_ta at T = 8, 16, 32.
-2. ☐ `make profile` run; tables 6a and 6c filled in; predicted and measured conflicts compared.
-3. ☐ `make bench` run; table 6b filled in.
-4. ☐ Answer "does padding help on this GPU?" with the evidence: expected *no* for `padded`, *yes* for the `_ta` experiment.
-5. ☐ Second profiler-guided improvement chosen from 6c, implemented, measured (section 8).
-6. ☐ Experiment log (section 7) complete, including the unsuccessful experiments.
+1. ☐ `make test` passes for tiled, padded, tiled_ta and padded_ta at T = 8, 16, 32. **Not logged yet.**
+2. ☑ `make profile` run; tables 6a and 6c filled in; predicted and measured conflicts compared (exact match).
+3. ☑ `make bench` run; table 6b filled in.
+4. ☑ "Does padding help on this GPU?" answered with evidence (section 7).
+5. ☐ Second profiler-guided improvement: diagnosed, chosen and **implemented** (`regtile`, section 8); **not yet measured on the GPU**.
+6. ☑ Experiment log (section 7) includes the unsuccessful experiment (padding the tiled kernel).

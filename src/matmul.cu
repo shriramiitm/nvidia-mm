@@ -11,6 +11,10 @@
 //   --impl tiled_ta / padded_ta   same kernel, but the A tile is stored TRANSPOSED in
 //   shared memory. This creates a column-wise store, the access pattern padding is
 //   designed to fix. See docs/week3.md.
+//
+// Optional extension (clearly separate fifth version, Week 3 second improvement):
+//   --impl regtile   register tiling: 64x64 block tile, 4x4 outputs per thread
+//                    (--tile is ignored). See docs/week3.md section 8.
 
 #include <cuda_runtime.h>
 
@@ -63,7 +67,7 @@ static double median(std::vector<double> v) {
 
 struct Args {
     std::string impl, input, output;
-    int tile = 16;
+    int tile = 32;  // fastest on every benchmarked shape (docs/week2.md section 8)
     bool bench = false;
     int trials = 20, warmup = 3, cpu_trials = 3;
 };
@@ -73,7 +77,8 @@ static void usage() {
             "usage: ./matmul --impl {cpu,naive,tiled,padded} --input IN.bin "
             "--output OUT.bin [--tile 8|16|32]\n"
             "       [--bench] [--trials N] [--warmup W] [--cpu-trials C]\n"
-            "       experiments: --impl tiled_ta | padded_ta (transposed A tile, see docs/week3.md)\n");
+            "       experiments: --impl tiled_ta | padded_ta (transposed A tile, see docs/week3.md)\n"
+            "       extension:   --impl regtile (register tiling, 4x4 outputs per thread; --tile ignored)\n");
 }
 
 static int parse_int(const char* s, const char* name) {
@@ -104,9 +109,9 @@ static Args parse_args(int argc, char** argv) {
         else { usage(); die("unknown argument '%s'", k.c_str()); }
     }
     if (a.impl != "cpu" && a.impl != "naive" && a.impl != "tiled" && a.impl != "padded" &&
-        a.impl != "tiled_ta" && a.impl != "padded_ta") {
+        a.impl != "tiled_ta" && a.impl != "padded_ta" && a.impl != "regtile") {
         usage();
-        die("--impl must be one of cpu, naive, tiled, padded (or the experiments tiled_ta, padded_ta)");
+        die("--impl must be one of cpu, naive, tiled, padded (or tiled_ta, padded_ta, regtile)");
     }
     if (a.input.empty()) { usage(); die("--input is required"); }
     if (a.output.empty() && !a.bench) { usage(); die("--output is required"); }
@@ -257,7 +262,92 @@ static void check_tile_resources(int tile, int pad) {
         die("--tile %d needs %zu bytes of shared memory but the device allows %d", tile, shared, maxShared);
 }
 
-static bool is_tiled(const std::string& impl) { return impl != "cpu" && impl != "naive"; }
+// ---- V5 (Week 3, second profiler-guided improvement): register tiling ---------
+// Profiling showed the tiled kernels are limited by the shared-memory pipe:
+// kernel time ~ shared-memory wavefronts, and each multiply-add needs 1.25
+// shared loads (docs/week3.md section 6c). Register tiling raises the work done
+// per shared load:
+//
+//   * a 256-thread block (16 x 16) owns a 64 x 64 tile of C (RT_BM x RT_BN);
+//   * each thread owns a 4 x 4 sub-block of C, kept in 16 registers;
+//   * per k, a thread reads 4 values of A and 4 values of B from shared memory
+//     (one 128-bit load each) and does 4 x 4 = 16 multiply-adds with them.
+//
+//   shared loads per FMA:  tiled 1.25 (scalar)  ->  regtile 2 x 128-bit / 16 = 0.125
+//
+// Shared-memory layout (the Week 3 padding lesson, applied):
+//   As is stored TRANSPOSED, As[k][m], so a thread's 4 A values (rows m..m+3)
+//   are contiguous and can be read with one float4. The transposed store walks
+//   down a column, which with a 64-float row would put 8 threads in one bank.
+//   Padding the row by RT_PAD = 4 floats (not 1) removes that conflict AND keeps
+//   every row 16-byte aligned, so the float4 reads stay legal. Padding by 1
+//   would break the alignment, as the padded kernel showed.
+//
+// Edge handling is the same idea as before: out-of-range elements are loaded as
+// 0.0f and every output store is guarded, so any M, N, K works.
+constexpr int RT_BM = 64, RT_BN = 64, RT_BK = 8;  // block tile of C, K step
+constexpr int RT_TM = 4, RT_TN = 4;                // per-thread sub-block of C
+constexpr int RT_PAD = 4;                          // keeps As rows 16-byte aligned
+constexpr int RT_THREADS = (RT_BM / RT_TM) * (RT_BN / RT_TN);  // 256
+
+__global__ void __launch_bounds__(RT_THREADS)
+matmul_regtile(const float* __restrict__ A, const float* __restrict__ B, float* __restrict__ C,
+               int M, int K, int N) {
+    __shared__ __align__(16) float As[RT_BK][RT_BM + RT_PAD];  // transposed: As[k][m]
+    __shared__ __align__(16) float Bs[RT_BK][RT_BN];           // Bs[k][n]
+
+    const int tx = threadIdx.x, ty = threadIdx.y;  // 16 x 16
+    const int tid = ty * blockDim.x + tx;
+    const int rowBase = blockIdx.y * RT_BM, colBase = blockIdx.x * RT_BN;
+
+    float acc[RT_TM][RT_TN] = {};
+
+    for (int k0 = 0; k0 < K; k0 += RT_BK) {
+        // Cooperative loads: 64 x 8 A elements and 8 x 64 B elements, 2 each per thread.
+#pragma unroll
+        for (int i = 0; i < (RT_BM * RT_BK) / RT_THREADS; i++) {
+            const int e = tid + i * RT_THREADS;
+            const int r = e / RT_BK, c = e % RT_BK;    // 8 consecutive threads read one 32-byte row piece
+            const int gr = rowBase + r, gc = k0 + c;
+            As[c][r] = (gr < M && gc < K) ? A[(size_t)gr * K + gc] : 0.0f;
+        }
+#pragma unroll
+        for (int i = 0; i < (RT_BK * RT_BN) / RT_THREADS; i++) {
+            const int e = tid + i * RT_THREADS;
+            const int r = e / RT_BN, c = e % RT_BN;    // a warp reads 32 consecutive floats of one row
+            const int gr = k0 + r, gc = colBase + c;
+            Bs[r][c] = (gr < K && gc < N) ? B[(size_t)gr * N + gc] : 0.0f;
+        }
+        __syncthreads();  // tiles fully loaded
+
+#pragma unroll
+        for (int k = 0; k < RT_BK; k++) {
+            const float4 a4 = *reinterpret_cast<const float4*>(&As[k][ty * RT_TM]);  // A[row..row+3][k]
+            const float4 b4 = *reinterpret_cast<const float4*>(&Bs[k][tx * RT_TN]);  // B[k][col..col+3]
+            const float a[RT_TM] = {a4.x, a4.y, a4.z, a4.w};
+            const float b[RT_TN] = {b4.x, b4.y, b4.z, b4.w};
+#pragma unroll
+            for (int i = 0; i < RT_TM; i++)
+#pragma unroll
+                for (int j = 0; j < RT_TN; j++) acc[i][j] += a[i] * b[j];
+        }
+        __syncthreads();  // everyone done before the next tiles overwrite these
+    }
+
+#pragma unroll
+    for (int i = 0; i < RT_TM; i++) {
+        const int row = rowBase + ty * RT_TM + i;
+        if (row >= M) continue;
+#pragma unroll
+        for (int j = 0; j < RT_TN; j++) {
+            const int col = colBase + tx * RT_TN + j;
+            if (col < N) C[(size_t)row * N + col] = acc[i][j];
+        }
+    }
+}
+
+// The four tiled variants (tiled, padded, tiled_ta, padded_ta) use --tile.
+static bool is_tiled(const std::string& impl) { return impl != "cpu" && impl != "naive" && impl != "regtile"; }
 static int pad_of(const std::string& impl) { return (impl == "padded" || impl == "padded_ta") ? 1 : 0; }
 
 template <int PAD, bool TA>
@@ -286,6 +376,10 @@ static void launch_kernel(const std::string& impl, int tile, const float* dA, co
         launch_tiled<0, true>(tile, dA, dB, dC, M, K, N);
     } else if (impl == "padded_ta") {
         launch_tiled<1, true>(tile, dA, dB, dC, M, K, N);
+    } else if (impl == "regtile") {
+        dim3 block(RT_BN / RT_TN, RT_BM / RT_TM);  // 16 x 16
+        dim3 grid((N + RT_BN - 1) / RT_BN, (M + RT_BM - 1) / RT_BM);
+        matmul_regtile<<<grid, block>>>(dA, dB, dC, M, K, N);
     } else {
         die("implementation '%s' has no GPU kernel", impl.c_str());
     }
@@ -303,7 +397,7 @@ static GpuRunTimes gpu_run(const std::string& impl, int tile, const float* hA, c
     const size_t bytesB = (size_t)K * N * sizeof(float);
     const size_t bytesC = (size_t)M * N * sizeof(float);
 
-    const int blockY = is_tiled(impl) ? tile : NAIVE_BLOCK;
+    const int blockY = (impl == "regtile") ? RT_BM : is_tiled(impl) ? tile : NAIVE_BLOCK;
     if ((M + blockY - 1) / blockY > 65535) die("M=%d is too large for this launch configuration", M);
 
     double t0 = now_ms();
@@ -392,7 +486,7 @@ int main(int argc, char** argv) {
 
     const double kernel_gflops = flops / (kernel_ms * 1e6);
     const double e2e_gflops = flops / (e2e_ms * 1e6);
-    const std::string tileStr = is_tiled(a.impl) ? std::to_string(a.tile) : "NA";
+    const std::string tileStr = is_tiled(a.impl) ? std::to_string(a.tile) : (a.impl == "regtile") ? "64x64" : "NA";
     if (a.bench) {
         // impl,M,K,N,tile,trials,kernel_ms,e2e_ms,kernel_gflops,e2e_gflops
         printf("%s,%d,%d,%d,%s,%d,%.4f,%.4f,%.2f,%.2f\n", a.impl.c_str(), M, K, N, tileStr.c_str(),

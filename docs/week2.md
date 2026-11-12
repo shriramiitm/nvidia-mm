@@ -3,9 +3,10 @@
 **Week 2 goal:** implement the shared-memory tiled kernel, compare at least two tile sizes, profile it, and use the profiler results to justify the optimization.
 
 > **Status of the numbers in this file.**
-> Sections 1–6 (counts, formulas, code behaviour) are derived from the problem sizes and the code, so they are exact.
-> Sections 7–9 contain **tables to fill in with your own GPU measurements**. They are left blank on purpose: performance numbers must come from running `make bench` and `make profile` on your GPU, not from guesses.
-> The CUDA kernel itself could not be compiled where this file was written (no GPU/nvcc available). Its index and zero-fill logic was verified by a NumPy emulation on 13 shapes × 3 tile sizes, but you must still run `make test` on a real GPU.
+> Sections 1–6 (counts, formulas, code behaviour) come from the problem sizes and the code.
+> Sections 7–9 are **measured** on a Tesla T4 (Google Colab, 12 Nov 2026, CUDA 13.0). Raw data:
+> `results/results.csv` (timings), `results/profile/` and `results/profile_summary.csv` (Nsight Compute).
+> The correctness suite has not been logged on the GPU yet (see section 10).
 
 ---
 
@@ -133,87 +134,100 @@ Both loads use a conditional, so out-of-range elements become `0.0f` and contrib
 
 ---
 
-## 7. Profiling plan (required in Week 2)
+## 7. Profiler results (1024×1024×1024)
 
-Run on your GPU:
-
-```
-make bench      # timings  -> results/results.csv, results/env.txt
-make profile    # Nsight Compute -> results/profile/*.ncu-rep and *.csv
-```
-
-`scripts/profile.sh` profiles one large divisible shape (1024×1024×1024) and one irregular shape (1000×513×769) for the naive kernel and the tiled kernel at TILE = 8, 16, 32.
-
-Fill in this table from the profiler (large divisible shape):
+Commands: `bash scripts/profile.sh`, then `python3 scripts/summarize_profile.py > results/profile_summary.csv`.
+`ncu` locks the GPU to its base clock while profiling, so the kernel times in this table are about 2.6×
+the benchmark times in section 9. Compare kernels with each other, not with section 9.
 
 | Metric | Naive | Tiled T=8 | Tiled T=16 | Tiled T=32 |
 |---|---|---|---|---|
-| Kernel time (ms) | | | | |
-| DRAM bytes read | | | | |
-| Global load requests / sectors | | | | |
-| Global load efficiency (%) | | | | |
-| Shared-memory bank conflicts (ld / st) | n/a | | | |
-| Achieved occupancy (%) | | | | |
-| Compute throughput (% of peak) | | | | |
-| Memory throughput (% of peak) | | | | |
-| Limiting resource (from "Speed of Light") | | | | |
+| Kernel time under ncu (ms) | 8.96 | 9.10 | 5.78 | 5.31 |
+| Global load requests | 67.1 M | 8.39 M | 4.19 M | 2.10 M |
+| Global load sectors (32 B) | 134.2 M | 33.5 M | 16.7 M | 8.39 M |
+| Global load efficiency | 56% | 100% | 100% | 100% |
+| DRAM bytes read | 212 MB | 164 MB | 193 MB | 148 MB |
+| Shared-memory bank conflicts (ld / st) | n/a | 0 / 0 | 0 / 0 | 0 / 0 |
+| Shared-memory load instructions | n/a | 41.9 M | 41.9 M | 41.9 M |
+| Achieved occupancy | 98.5% | 98.7% | 98.7% | 99.9% |
+| SM throughput (% of peak) | 64% | 55% | 75% | 74% |
+| Memory throughput (% of peak) | 64% | 55% | 75% | 74% |
 
-What the evidence should show if the explanation in sections 2–4 is right:
+Irregular shape 1000×513×769 (same trends; global-load efficiency drops because rows of length 513 and
+769 floats don't start on 32-byte sector boundaries):
 
-1. The naive kernel has high memory throughput relative to compute throughput (memory-bound).
-2. The tiled kernels move far fewer bytes from global memory (compare the DRAM and global-load rows against the table in section 4).
-3. Tiled kernel time drops accordingly.
+| Metric | Naive | Tiled T=8 | Tiled T=16 | Tiled T=32 |
+|---|---|---|---|---|
+| Kernel time under ncu (ms) | 2.70 | 3.49 | 2.27 | 2.19 |
+| Global load requests | 25.1 M | 3.14 M | 1.60 M | 0.84 M |
+| Global load efficiency | 46% | 49% | 63% | 80% |
+| DRAM bytes read | 10.0 MB | 13.2 MB | 9.7 MB | 7.4 MB |
+| Achieved occupancy | 97.1% | 98.2% | 98.2% | 99.8% |
 
-If the numbers disagree with these expectations, **report that and analyse why** (the project explicitly asks for honest reporting). For example, caches may already hide much of the naive kernel's redundant traffic on your GPU, which would make the improvement smaller than the load-count reduction suggests.
+### What the evidence shows
+
+1. **Tiling cuts global load requests by exactly TILE×,** as predicted in section 4: 67.1 M → 8.39 M /
+   4.19 M / 2.10 M for T = 8 / 16 / 32. Sectors drop 134 M → 8.4 M, and load efficiency goes from 56% to 100%.
+2. **DRAM traffic hardly changes** (212 MB → 148–193 MB). The naive kernel asks L1 for 134 M sectors (4.3 GB),
+   but only 212 MB reaches DRAM. The caches were already absorbing ~95% of the redundant reads. So the
+   16–32× reduction happens at L1/L2, not DRAM, and the speedup is **1.7–2.0×, not 16–32×**. Section 7
+   predicted this possibility.
+3. **Neither kernel is DRAM-bound or FP32-bound.** DRAM reads are ~33 GB/s for tiled T=16 under ncu (~10% of
+   the T4's 320 GB/s). The best kernel reaches 1042 GFLOP/s, ~13% of the T4's 8.1 TFLOP/s FP32 peak.
+4. **Occupancy is not the problem:** 98–100% for every kernel, including T = 32 with 1024-thread blocks.
+5. **The new limiter is the shared-memory path.** SM and memory throughput report the same percentage in
+   every row, meaning both peak on the same unit. The only unit busy enough is the L1/shared-memory pipe.
+   Each multiply-add needs 1.25 shared-memory loads (one `Bs` value, plus a quarter of a 128-bit `As`
+   load); the instruction count of 41.9 M is the same for every tile size. Week 3 (section 6c there) shows
+   kernel time is proportional to shared-memory wavefronts. *To confirm which unit, open a `.ncu-rep`:*
+   `ncu --import results/profile/tiled_T32_1024x1024x1024.ncu-rep --page details --section SpeedOfLight --section MemoryWorkloadAnalysis`.
 
 ---
 
-## 8. Profiler-guided optimization log (required milestone)
-
-Use one entry per optimization. Entry 1 is pre-filled with the Week 2 change; complete the measured parts.
+## 8. Profiler-guided optimization log
 
 | Field | Entry 1: shared-memory tiling |
 |---|---|
-| Observation (naive profile) | *fill in: e.g. memory throughput % vs. compute throughput %, DRAM bytes read* |
+| Observation (naive profile) | 67.1 M global load requests (2·K per output); load efficiency 56% (each warp spans 2 rows, so the A load uses 8 of 64 fetched bytes); SM / memory throughput 64% |
 | Hypothesis | Redundant global loads limit the naive kernel; reuse through shared memory should cut global traffic by about TILE× |
 | Change | `matmul_tiled<TILE>` with cooperative loads, 2 × `__syncthreads()`, zero-filled edge tiles |
-| Expected effect | Global bytes down by 8× / 16× / 32× for T = 8 / 16 / 32 (section 4) |
-| Measured effect | *fill in: DRAM bytes, kernel time, GFLOP/s before and after* |
-| Conclusion | *fill in: did the evidence support the hypothesis? what is the new bottleneck?* |
+| Expected effect | Global loads down by 8× / 16× / 32× for T = 8 / 16 / 32 (section 4) |
+| Measured effect | Requests down **exactly** 8× / 16× / 32×; load efficiency 56% → 100%; DRAM reads only 1.1–1.4× lower. Kernel time (benchmark, T = 32): 1024³ 3.44 → 2.06 ms (**1.67×**), 4096³ 304 → 154 ms (**1.97×**), 2048×512×4096 **1.96×**, 1000×513×769 **1.24×** |
+| Conclusion | Supported at the L1/L2 level. The gain is smaller than the load reduction because L2 was already catching most of the reuse. The new bottleneck is the shared-memory pipe (point 5 above), not global memory |
 
 | Field | Entry 2: tile size selection |
 |---|---|
-| Observation | *fill in: compare T = 8 / 16 / 32 in the table in section 7 (occupancy, load efficiency, time)* |
-| Hypothesis | *fill in, using the trade-offs in section 5* |
-| Change | Choose the default `--tile` per the evidence |
-| Measured effect | *fill in* |
-| Conclusion | *fill in* |
-
-Later ideas to try only if the profile supports them (do not add them blindly): register tiling so each thread computes several outputs, and vectorized loads. Both are listed as optional extensions in the project.
+| Observation | T = 32 is fastest on every shape; T = 16 is 4–14% slower (29% slower at 4096³); T = 8 is **slower than naive** at 4096³ (324 vs 304 ms) and 1000×513×769 (1.30 vs 1.03 ms) |
+| Hypothesis | Same shared-instruction count for all T (41.9 M), so the difference is overhead per tile step: T = 8 has 4× the global requests and `__syncthreads()` per output of T = 32, and 16× as many blocks. Occupancy is ~99% for all T, so it's not occupancy |
+| Change | Default `--tile` changed from 16 to **32** (`src/matmul.cu`) |
+| Measured effect | T = 32 vs T = 16: 1024³ 2.15 → 2.06 ms (4%), 4096³ 199 → 154 ms (22%), 2048×512×4096 9.04 → 8.30 ms (8%), 1000×513×769 0.859 → 0.827 ms (4%) |
+| Conclusion | Larger tiles win on this GPU. T = 32 also has the best global-load efficiency on the irregular shape (80% vs 63% / 49%) |
 
 ---
 
-## 9. Results to report (fill from `results/results.csv`)
+## 9. Results (benchmark, kernel-only, median of 20)
 
 | Shape | Naive kernel (ms) | Tiled T=8 | Tiled T=16 | Tiled T=32 | Naive → best tiled speedup | Best tiled GFLOP/s |
 |---|---|---|---|---|---|---|
-| 256×256×256 | | | | | | |
-| 1024×1024×1024 | | | | | | |
-| 4096×4096×4096 | | | | | | |
-| 2048×512×4096 | | | | | | |
-| 1000×513×769 | | | | | | |
+| 256×256×256 | 0.144 | 0.073 | 0.056 | 0.049 | 2.92× (T=32) | 681 |
+| 1024×1024×1024 | 3.444 | 3.363 | 2.155 | 2.062 | 1.67× (T=32) | 1042 |
+| 4096×4096×4096 | 304.3 | 324.2 | 199.1 | 154.4 | 1.97× (T=32) | 890 |
+| 2048×512×4096 | 16.27 | 16.27 | 9.039 | 8.302 | 1.96× (T=32) | 1035 |
+| 1000×513×769 | 1.025 | 1.301 | 0.859 | 0.827 | 1.24× (T=32) | 954 |
 
-Also record (required): CPU model, GPU model, CUDA version, compiler flags, and benchmark commands. `results/env.txt` captures most of these automatically.
+Environment: Tesla T4 (driver 580.82.07, max SM clock 1590 MHz, 70 W power limit), 2-vCPU Intel Xeon @ 2.00 GHz
+(Colab), CUDA 13.0, `nvcc -O3 -std=c++14 -arch=native`. Command: `bash scripts/bench.sh`. Plots:
+`results/plots/tile_sizes.svg`, `results/plots/gflops_by_impl.svg`.
 
 ---
 
 ## 10. Week 2 milestone checklist
 
-1. ☐ `make test` passes for `naive` and `tiled` at tile sizes 8, 16, 32 (all 15 shapes, including the 1-sized and 31/33 cases).
-2. ☐ `make bench` has run and `results/results.csv` is saved.
-3. ☐ `make profile` has run; the `.ncu-rep` files are kept.
-4. ☐ Section 7 table filled from the profiler.
-5. ☐ Section 8, entry 1 completed with measured evidence.
+1. ☐ `make test` passes for `naive` and `tiled` at tile sizes 8, 16, 32. **Not logged yet: run `bash scripts/run_tests.sh | tee results/tests.txt`.**
+2. ☑ `make bench` run, `results/results.csv` saved.
+3. ☑ `make profile` run, `.ncu-rep` files kept.
+4. ☑ Section 7 table filled from the profiler.
+5. ☑ Section 8, entries 1 and 2 completed with measured evidence.
 6. ☐ Everything committed and pushed to GitHub.
 
 **Heads-up for Week 3 (padding):** in this kernel the shared-memory reads `As[ty][k]` (same address across a warp row) and `Bs[k][tx]` (consecutive addresses) are expected to be free of bank conflicts already, so padding may show little or no gain. Check the bank-conflict row in section 7 first; the project explicitly asks you to report honestly if padding does not help.

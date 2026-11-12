@@ -7,3 +7,5 @@ data/
 
 # python cache
 __pycache__/
+# upload bundles for Colab
+*.zip

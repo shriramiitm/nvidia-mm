@@ -13,7 +13,7 @@
 set -u
 cd "$(dirname "$0")/.."   # run from the repo root
 command -v ncu >/dev/null || { echo "error: ncu (Nsight Compute) not found in PATH"; exit 1; }
-IMPLS=${IMPLS:-"naive tiled padded tiled_ta padded_ta"}
+IMPLS=${IMPLS:-"naive tiled padded tiled_ta padded_ta regtile"}
 TILES=${TILES:-"8 16 32"}
 SEED=42
 OUT=results/profile
@@ -50,7 +50,7 @@ for s in "${SHAPES[@]}"; do
     case "$impl" in tiled|padded|tiled_ta|padded_ta) tiles="$TILES" ;; esac
     for t in $tiles; do
       name="${impl}_T${t}_${M}x${K}x${N}"
-      [ "$impl" = naive ] && name="naive_${M}x${K}x${N}"
+      case "$impl" in naive|regtile) name="${impl}_${M}x${K}x${N}" ;; esac
       echo "== profiling $name"
       # one normal (non --bench) run = exactly one kernel launch
       ncu --set full --force-overwrite -k regex:matmul_ -c 1 -o "$OUT/$name" \
