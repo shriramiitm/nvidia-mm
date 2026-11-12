@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Benchmark the required shapes; writes results/results.csv and results/env.txt.
-#   bash bench.sh
-#   IMPLS="cpu naive tiled" TILES="8 16 32" TRIALS=20 bash bench.sh
+#   bash scripts/bench.sh
+#   IMPLS="cpu naive tiled padded tiled_ta padded_ta" TILES="8 16 32" TRIALS=20 bash scripts/bench.sh
 set -eu
-cd "$(dirname "$0")"
-IMPLS=${IMPLS:-"cpu naive tiled"}
+cd "$(dirname "$0")/.."   # run from the repo root
+IMPLS=${IMPLS:-"cpu naive tiled padded tiled_ta padded_ta"}
 TILES=${TILES:-"8 16 32"}
 TRIALS=${TRIALS:-20}
 WARMUP=${WARMUP:-3}
@@ -32,13 +32,13 @@ echo "impl,M,K,N,tile,trials,kernel_ms,e2e_ms,kernel_gflops,e2e_gflops" >results
 for s in "${SHAPES[@]}"; do
   read -r M K N <<<"$s"
   f="data/in_${M}_${K}_${N}.bin"
-  if [ ! -f "$f" ]; then python3 gen.py "$M" "$K" "$N" "$SEED" "$f"; fi
+  if [ ! -f "$f" ]; then python3 scripts/gen.py "$M" "$K" "$N" "$SEED" "$f"; fi
   work=$((M * K * N))
   cpu_trials=3
   if [ "$work" -gt 2000000000 ]; then cpu_trials=1; fi   # big CPU runs take minutes
   for impl in $IMPLS; do
     tiles="16"   # ignored by cpu / naive
-    case "$impl" in tiled|padded) tiles="$TILES" ;; esac
+    case "$impl" in tiled|padded|tiled_ta|padded_ta) tiles="$TILES" ;; esac
     for t in $tiles; do
       ./matmul --impl "$impl" --tile "$t" --input "$f" --bench --trials "$TRIALS" \
                --warmup "$WARMUP" --cpu-trials "$cpu_trials" | tee -a results/results.csv

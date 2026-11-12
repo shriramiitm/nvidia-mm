@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Check an output file against an independent float64 NumPy reference.
 
-Usage: python3 check_cpu.py INPUT.bin OUT.bin
+Usage: python3 scripts/check_cpu.py INPUT.bin OUT.bin
 Used to make sure the CPU baseline itself is right before trusting it as the
 reference for every GPU version.  Exit status 0 = pass.
 """

@@ -2,12 +2,12 @@
 # Automated correctness suite: for every shape, generate input (fixed seed),
 # run the CPU reference, check the CPU against NumPy, then compare every GPU
 # implementation (and every tile size) against the CPU output.
-#   bash run_tests.sh                                  # default: naive tiled
-#   IMPLS="naive tiled padded" bash run_tests.sh       # once Week 3 is done
-#   TILES="8 16 32" bash run_tests.sh                  # tile sizes for tiled/padded
+#   bash scripts/run_tests.sh   # default: naive tiled padded (+ experiments tiled_ta padded_ta)
+#   IMPLS="naive" bash scripts/run_tests.sh             # Week 1 only
+#   TILES="8 16 32" bash scripts/run_tests.sh           # tile sizes for tiled/padded
 set -u
-cd "$(dirname "$0")"
-IMPLS=${IMPLS:-"naive tiled"}
+cd "$(dirname "$0")/.."   # run from the repo root
+IMPLS=${IMPLS:-"naive tiled padded tiled_ta padded_ta"}
 TILES=${TILES:-"8 16 32"}
 SEED=42
 TMP=$(mktemp -d)
@@ -41,21 +41,21 @@ report() {  # report STATUS LABEL DETAIL
 for s in "${SHAPES[@]}"; do
   read -r M K N <<<"$s"
   shape="(M=$M K=$K N=$N)"
-  if ! python3 gen.py "$M" "$K" "$N" "$SEED" "$TMP/in.bin"; then
+  if ! python3 scripts/gen.py "$M" "$K" "$N" "$SEED" "$TMP/in.bin"; then
     report FAIL "generate $shape" ""; continue
   fi
   if ! ./matmul --impl cpu --input "$TMP/in.bin" --output "$TMP/ref.bin" >/dev/null; then
     report FAIL "cpu run $shape" ""; continue
   fi
-  out=$(python3 check_cpu.py "$TMP/in.bin" "$TMP/ref.bin") \
+  out=$(python3 scripts/check_cpu.py "$TMP/in.bin" "$TMP/ref.bin") \
     && report PASS "cpu vs numpy $shape" "$out" || report FAIL "cpu vs numpy $shape" "$out"
 
   for impl in $IMPLS; do
     tiles="16"   # ignored by naive
-    case "$impl" in tiled|padded) tiles="$TILES" ;; esac
+    case "$impl" in tiled|padded|tiled_ta|padded_ta) tiles="$TILES" ;; esac
     for t in $tiles; do
       label="$impl"
-      case "$impl" in tiled|padded) label="$impl T=$t" ;; esac
+      case "$impl" in tiled|padded|tiled_ta|padded_ta) label="$impl T=$t" ;; esac
       if ! ./matmul --impl "$impl" --tile "$t" --input "$TMP/in.bin" --output "$TMP/out.bin" >/dev/null; then
         report FAIL "$label run $shape" "program failed"; continue
       fi

@@ -1,4 +1,5 @@
-// matmul.cu -- single-threaded CPU (Week 1), naive CUDA (Week 1), shared-memory tiled CUDA (Week 2).
+// matmul.cu -- single-threaded CPU (Week 1), naive CUDA (Week 1), shared-memory tiled CUDA (Week 2),
+//              tiled CUDA with shared-memory padding (Week 3).
 //
 //   ./matmul --impl {cpu,naive,tiled,padded} --input IN.bin --output OUT.bin [--tile T]
 //
@@ -6,7 +7,10 @@
 //   --bench  --trials N (GPU, default 20)  --warmup W (GPU, default 3)
 //            --cpu-trials C (default 3)    (--output is optional with --bench)
 //
-// padded is a placeholder until Week 3.
+// Week 3 experiment (not one of the four required versions):
+//   --impl tiled_ta / padded_ta   same kernel, but the A tile is stored TRANSPOSED in
+//   shared memory. This creates a column-wise store, the access pattern padding is
+//   designed to fix. See docs/week3.md.
 
 #include <cuda_runtime.h>
 
@@ -68,7 +72,8 @@ static void usage() {
     fprintf(stderr,
             "usage: ./matmul --impl {cpu,naive,tiled,padded} --input IN.bin "
             "--output OUT.bin [--tile 8|16|32]\n"
-            "       [--bench] [--trials N] [--warmup W] [--cpu-trials C]\n");
+            "       [--bench] [--trials N] [--warmup W] [--cpu-trials C]\n"
+            "       experiments: --impl tiled_ta | padded_ta (transposed A tile, see docs/week3.md)\n");
 }
 
 static int parse_int(const char* s, const char* name) {
@@ -98,9 +103,10 @@ static Args parse_args(int argc, char** argv) {
         else if (k == "--help" || k == "-h") { usage(); exit(0); }
         else { usage(); die("unknown argument '%s'", k.c_str()); }
     }
-    if (a.impl != "cpu" && a.impl != "naive" && a.impl != "tiled" && a.impl != "padded") {
+    if (a.impl != "cpu" && a.impl != "naive" && a.impl != "tiled" && a.impl != "padded" &&
+        a.impl != "tiled_ta" && a.impl != "padded_ta") {
         usage();
-        die("--impl must be one of cpu, naive, tiled, padded");
+        die("--impl must be one of cpu, naive, tiled, padded (or the experiments tiled_ta, padded_ta)");
     }
     if (a.input.empty()) { usage(); die("--input is required"); }
     if (a.output.empty() && !a.bench) { usage(); die("--output is required"); }
@@ -141,12 +147,7 @@ static void write_output(const std::string& path, const float* C, size_t n) {
     if (fclose(f) != 0) die("failed closing output file '%s'", path.c_str());
 }
 
-// ---------------------------------------------------------------- CPU baseline
-
-// Single thread, loop order i-k-j.
-// For row-major data the inner j-loop walks B[k][*] and C[i][*] contiguously
-// (stride 1) and A[i][k] is a loop-invariant scalar, so every cache line that
-// is fetched gets fully used. i-j-k would walk down a column of B (stride N).
+//CPU Baseline
 static void cpu_matmul(const float* A, const float* B, float* C, int M, int K, int N) {
     std::fill(C, C + (size_t)M * N, 0.0f);
     for (int i = 0; i < M; i++) {
@@ -180,7 +181,7 @@ __global__ void matmul_naive(const float* A, const float* B, float* C, int M, in
     }
 }
 
-// ---- V2 (Week 2): shared-memory tiled --------------------------------------
+// ---- V2 (Week 2) + V3 (Week 3): shared-memory tiled, optionally padded ------
 // A block of TILE x TILE threads owns one TILE x TILE tile of C. It walks along
 // K in steps of TILE. In each step the block cooperatively loads ONE tile of A
 // and ONE tile of B into shared memory (each thread loads one element of each),
@@ -193,11 +194,28 @@ __global__ void matmul_naive(const float* A, const float* B, float* C, int M, in
 // nothing to the sum, so K, M, N need not be multiples of TILE. All threads
 // (even ones outside C) must reach both __syncthreads(), so there is no early
 // return; only the final store is guarded.
-template <int TILE>
+//
+// PAD (Week 3): the shared arrays are declared [TILE][TILE + PAD]. The logical
+// tile is still TILE x TILE and column TILE..TILE+PAD-1 is never read or
+// written, so the result is identical. Only the physical row length (leading
+// dimension LD) changes, and with it the bank of each element:
+//     bank(As[r][c]) = (r * LD + c) % 32
+// With LD = TILE + 1 (odd), walking DOWN a column moves one bank per row
+// instead of staying in the same bank. tiled = PAD 0, padded = PAD 1, so
+// global-memory tiling and arithmetic are exactly the same in both: padding is
+// the only experimental variable.
+//
+// TRANSPOSE_A (Week 3 experiment only): store the A tile as As[tx][ty] and read
+// it as As[k][ty]. The multiply-add is unchanged (As[k][ty] holds A[row][t*TILE+k]),
+// but the shared-memory STORE now walks down a column: with LD = TILE = 32
+// every thread of a warp hits the same bank (32-way conflict). This is the
+// pattern padding is designed to fix; the normal layout does not have it.
+// Predicted conflict counts for every variant: python3 scripts/bank_model.py
+template <int TILE, int PAD, bool TRANSPOSE_A>
 __global__ void matmul_tiled(const float* __restrict__ A, const float* __restrict__ B,
                              float* __restrict__ C, int M, int K, int N) {
-    __shared__ float As[TILE][TILE];
-    __shared__ float Bs[TILE][TILE];
+    __shared__ float As[TILE][TILE + PAD];
+    __shared__ float Bs[TILE][TILE + PAD];
 
     const int tx = threadIdx.x, ty = threadIdx.y;
     const int row = blockIdx.y * TILE + ty;
@@ -209,29 +227,49 @@ __global__ void matmul_tiled(const float* __restrict__ A, const float* __restric
         const int aCol = t * TILE + tx;  // column of A this thread loads
         const int bRow = t * TILE + ty;  // row of B this thread loads
         // consecutive tx -> consecutive addresses in both loads (coalesced)
-        As[ty][tx] = (row < M && aCol < K) ? A[(size_t)row * K + aCol] : 0.0f;
+        const float a = (row < M && aCol < K) ? A[(size_t)row * K + aCol] : 0.0f;
+        if (TRANSPOSE_A) As[tx][ty] = a;  // column-wise store (experiment)
+        else             As[ty][tx] = a;  // row-wise store
         Bs[ty][tx] = (bRow < K && col < N) ? B[(size_t)bRow * N + col] : 0.0f;
         __syncthreads();  // tile fully loaded before anyone reads it
 
 #pragma unroll
-        for (int k = 0; k < TILE; k++) acc += As[ty][k] * Bs[k][tx];
+        for (int k = 0; k < TILE; k++) {
+            const float av = TRANSPOSE_A ? As[k][ty] : As[ty][k];  // both = A[row][t*TILE+k]
+            acc += av * Bs[k][tx];
+        }
         __syncthreads();  // everyone done reading before the tile is overwritten
     }
     if (row < M && col < N) C[(size_t)row * N + col] = acc;
 }
 
 // Tile sizes must fit the device: TILE*TILE threads per block and
-// 2*TILE*TILE floats of shared memory.
-static void check_tile_resources(int tile) {
+// 2*TILE*(TILE+PAD) floats of shared memory.
+static void check_tile_resources(int tile, int pad) {
     int dev = 0, maxThreads = 0, maxShared = 0;
     CUDA_CHECK(cudaGetDevice(&dev));
     CUDA_CHECK(cudaDeviceGetAttribute(&maxThreads, cudaDevAttrMaxThreadsPerBlock, dev));
     CUDA_CHECK(cudaDeviceGetAttribute(&maxShared, cudaDevAttrMaxSharedMemoryPerBlock, dev));
-    size_t shared = 2 * (size_t)tile * tile * sizeof(float);
+    size_t shared = 2 * (size_t)tile * (tile + pad) * sizeof(float);
     if (tile * tile > maxThreads)
         die("--tile %d needs %d threads per block but the device allows %d", tile, tile * tile, maxThreads);
     if (shared > (size_t)maxShared)
         die("--tile %d needs %zu bytes of shared memory but the device allows %d", tile, shared, maxShared);
+}
+
+static bool is_tiled(const std::string& impl) { return impl != "cpu" && impl != "naive"; }
+static int pad_of(const std::string& impl) { return (impl == "padded" || impl == "padded_ta") ? 1 : 0; }
+
+template <int PAD, bool TA>
+static void launch_tiled(int tile, const float* dA, const float* dB, float* dC, int M, int K, int N) {
+    dim3 block(tile, tile);
+    dim3 grid((N + tile - 1) / tile, (M + tile - 1) / tile);
+    switch (tile) {
+        case 8:  matmul_tiled<8, PAD, TA><<<grid, block>>>(dA, dB, dC, M, K, N); break;
+        case 16: matmul_tiled<16, PAD, TA><<<grid, block>>>(dA, dB, dC, M, K, N); break;
+        case 32: matmul_tiled<32, PAD, TA><<<grid, block>>>(dA, dB, dC, M, K, N); break;
+        default: die("unsupported --tile %d", tile);
+    }
 }
 
 static void launch_kernel(const std::string& impl, int tile, const float* dA, const float* dB, float* dC,
@@ -241,14 +279,13 @@ static void launch_kernel(const std::string& impl, int tile, const float* dA, co
         dim3 grid((N + block.x - 1) / block.x, (M + block.y - 1) / block.y);
         matmul_naive<<<grid, block>>>(dA, dB, dC, M, K, N);
     } else if (impl == "tiled") {
-        dim3 block(tile, tile);
-        dim3 grid((N + tile - 1) / tile, (M + tile - 1) / tile);
-        switch (tile) {
-            case 8:  matmul_tiled<8><<<grid, block>>>(dA, dB, dC, M, K, N); break;
-            case 16: matmul_tiled<16><<<grid, block>>>(dA, dB, dC, M, K, N); break;
-            case 32: matmul_tiled<32><<<grid, block>>>(dA, dB, dC, M, K, N); break;
-            default: die("unsupported --tile %d", tile);
-        }
+        launch_tiled<0, false>(tile, dA, dB, dC, M, K, N);
+    } else if (impl == "padded") {
+        launch_tiled<1, false>(tile, dA, dB, dC, M, K, N);
+    } else if (impl == "tiled_ta") {
+        launch_tiled<0, true>(tile, dA, dB, dC, M, K, N);
+    } else if (impl == "padded_ta") {
+        launch_tiled<1, true>(tile, dA, dB, dC, M, K, N);
     } else {
         die("implementation '%s' has no GPU kernel", impl.c_str());
     }
@@ -266,7 +303,7 @@ static GpuRunTimes gpu_run(const std::string& impl, int tile, const float* hA, c
     const size_t bytesB = (size_t)K * N * sizeof(float);
     const size_t bytesC = (size_t)M * N * sizeof(float);
 
-    const int blockY = (impl == "tiled") ? tile : NAIVE_BLOCK;
+    const int blockY = is_tiled(impl) ? tile : NAIVE_BLOCK;
     if ((M + blockY - 1) / blockY > 65535) die("M=%d is too large for this launch configuration", M);
 
     double t0 = now_ms();
@@ -312,11 +349,6 @@ static GpuRunTimes gpu_run(const std::string& impl, int tile, const float* hA, c
 int main(int argc, char** argv) {
     Args a = parse_args(argc, argv);
 
-    if (a.impl == "padded") {
-        fprintf(stderr, "error: implementation 'padded' is not implemented yet (planned for Week 3)\n");
-        return 2;
-    }
-
     Problem p;
     std::vector<float> C;
     try {
@@ -340,9 +372,9 @@ int main(int argc, char** argv) {
             t.push_back(now_ms() - t0);
         }
         kernel_ms = e2e_ms = median(t);  // CPU: multiplication only, no transfers
-    } else {  // naive or tiled
+    } else {  // naive, tiled, padded (and experiments)
         CUDA_CHECK(cudaFree(0));  // force context creation; clear error if no GPU
-        if (a.impl == "tiled") check_tile_resources(a.tile);
+        if (is_tiled(a.impl)) check_tile_resources(a.tile, pad_of(a.impl));
         trials_used = a.bench ? a.trials : 1;
         if (a.bench)
             for (int i = 0; i < a.warmup; i++) gpu_run(a.impl, a.tile, p.A.data(), p.B.data(), C.data(), M, K, N);
@@ -360,7 +392,7 @@ int main(int argc, char** argv) {
 
     const double kernel_gflops = flops / (kernel_ms * 1e6);
     const double e2e_gflops = flops / (e2e_ms * 1e6);
-    const std::string tileStr = (a.impl == "tiled") ? std::to_string(a.tile) : "NA";
+    const std::string tileStr = is_tiled(a.impl) ? std::to_string(a.tile) : "NA";
     if (a.bench) {
         // impl,M,K,N,tile,trials,kernel_ms,e2e_ms,kernel_gflops,e2e_gflops
         printf("%s,%d,%d,%d,%s,%d,%.4f,%.4f,%.2f,%.2f\n", a.impl.c_str(), M, K, N, tileStr.c_str(),

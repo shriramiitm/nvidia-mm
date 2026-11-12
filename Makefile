@@ -7,17 +7,17 @@ CXXFLAGS = -O2 -std=c++14 -Wall -Wextra
 
 all: matmul compare
 
-matmul: matmul.cu
+matmul: src/matmul.cu
 	$(NVCC) $(NVFLAGS) -o $@ $<
 
-compare: compare.cpp
+compare: src/compare.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $<
 
 test: all
-	bash run_tests.sh
+	bash scripts/run_tests.sh
 
 bench: all
-	bash bench.sh
+	bash scripts/bench.sh
 
 clean:
 	rm -f matmul compare
@@ -25,4 +25,4 @@ clean:
 .PHONY: all test bench profile clean
 
 profile: all
-	bash profile.sh
+	bash scripts/profile.sh

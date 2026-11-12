@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Input generator for the matmul project.
 
-Usage:  python3 gen.py M K N SEED OUT.bin
+Usage:  python3 scripts/gen.py M K N SEED OUT.bin
 
 File layout (native little-endian, no padding):
     int32   M, K, N

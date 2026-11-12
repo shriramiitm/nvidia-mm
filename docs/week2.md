@@ -1,4 +1,4 @@
-# Week 1 → Week 2: what changed and why
+# Week 2: shared-memory tiling (what changed from Week 1 and why)
 
 **Week 2 goal:** implement the shared-memory tiled kernel, compare at least two tile sizes, profile it, and use the profiler results to justify the optimization.
 
@@ -142,7 +142,7 @@ make bench      # timings  -> results/results.csv, results/env.txt
 make profile    # Nsight Compute -> results/profile/*.ncu-rep and *.csv
 ```
 
-`profile.sh` profiles one large divisible shape (1024×1024×1024) and one irregular shape (1000×513×769) for the naive kernel and the tiled kernel at TILE = 8, 16, 32.
+`scripts/profile.sh` profiles one large divisible shape (1024×1024×1024) and one irregular shape (1000×513×769) for the naive kernel and the tiled kernel at TILE = 8, 16, 32.
 
 Fill in this table from the profiler (large divisible shape):
 
