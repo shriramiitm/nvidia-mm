@@ -1,20 +1,3 @@
-// matmul.cu -- single-threaded CPU (Week 1), naive CUDA (Week 1), shared-memory tiled CUDA (Week 2),
-//              tiled CUDA with shared-memory padding (Week 3).
-//
-//   ./matmul --impl {cpu,naive,tiled,padded} --input IN.bin --output OUT.bin [--tile T]
-//
-// Extra options for benchmarking (prints ONE csv line to stdout):
-//   --bench  --trials N (GPU, default 20)  --warmup W (GPU, default 3)
-//            --cpu-trials C (default 3)    (--output is optional with --bench)
-//
-// Week 3 experiment (not one of the four required versions):
-//   --impl tiled_ta / padded_ta   same kernel, but the A tile is stored TRANSPOSED in
-//   shared memory. This creates a column-wise store, the access pattern padding is
-//   designed to fix. See docs/week3.md.
-//
-// Optional extension (clearly separate fifth version, Week 3 second improvement):
-//   --impl regtile   register tiling: 64x64 block tile, 4x4 outputs per thread
-//                    (--tile is ignored). See docs/week3.md section 8.
 
 #include <cuda_runtime.h>
 
@@ -29,7 +12,6 @@
 #include <string>
 #include <vector>
 
-// ---------------------------------------------------------------- helpers
 
 // Check every CUDA API call. On failure: clear message + nonzero exit status.
 #define CUDA_CHECK(call)                                                      \
@@ -63,7 +45,6 @@ static double median(std::vector<double> v) {
     return (n % 2) ? v[n / 2] : 0.5 * (v[n / 2 - 1] + v[n / 2]);
 }
 
-// ---------------------------------------------------------------- arguments
 
 struct Args {
     std::string impl, input, output;
@@ -165,14 +146,8 @@ static void cpu_matmul(const float* A, const float* B, float* C, int M, int K, i
     }
 }
 
-// ---------------------------------------------------------------- GPU kernels
+// V1 (Week 1): naive 
 
-// ---- V1 (Week 1): naive ----------------------------------------------------
-// One thread = one output element C[row][col], full K-length dot product
-// straight from global memory. col comes from threadIdx.x, so the 32 threads
-// of a warp read consecutive B[k][col..col+31] and write consecutive C
-// elements -> coalesced. A[row][k] is the same address for the whole warp
-// (a broadcast).
 constexpr int NAIVE_BLOCK = 16;
 
 __global__ void matmul_naive(const float* A, const float* B, float* C, int M, int K, int N) {
@@ -186,36 +161,7 @@ __global__ void matmul_naive(const float* A, const float* B, float* C, int M, in
     }
 }
 
-// ---- V2 (Week 2) + V3 (Week 3): shared-memory tiled, optionally padded ------
-// A block of TILE x TILE threads owns one TILE x TILE tile of C. It walks along
-// K in steps of TILE. In each step the block cooperatively loads ONE tile of A
-// and ONE tile of B into shared memory (each thread loads one element of each),
-// then every thread does TILE multiply-adds out of shared memory. Each element
-// fetched from global memory is therefore used by TILE threads instead of 1.
-//
-//   global loads per output element:  naive 2*K   ->   tiled 2*K/TILE
-//
-// Edge handling: out-of-range tile elements are loaded as 0.0f, which adds
-// nothing to the sum, so K, M, N need not be multiples of TILE. All threads
-// (even ones outside C) must reach both __syncthreads(), so there is no early
-// return; only the final store is guarded.
-//
-// PAD (Week 3): the shared arrays are declared [TILE][TILE + PAD]. The logical
-// tile is still TILE x TILE and column TILE..TILE+PAD-1 is never read or
-// written, so the result is identical. Only the physical row length (leading
-// dimension LD) changes, and with it the bank of each element:
-//     bank(As[r][c]) = (r * LD + c) % 32
-// With LD = TILE + 1 (odd), walking DOWN a column moves one bank per row
-// instead of staying in the same bank. tiled = PAD 0, padded = PAD 1, so
-// global-memory tiling and arithmetic are exactly the same in both: padding is
-// the only experimental variable.
-//
-// TRANSPOSE_A (Week 3 experiment only): store the A tile as As[tx][ty] and read
-// it as As[k][ty]. The multiply-add is unchanged (As[k][ty] holds A[row][t*TILE+k]),
-// but the shared-memory STORE now walks down a column: with LD = TILE = 32
-// every thread of a warp hits the same bank (32-way conflict). This is the
-// pattern padding is designed to fix; the normal layout does not have it.
-// Predicted conflict counts for every variant: python3 scripts/bank_model.py
+
 template <int TILE, int PAD, bool TRANSPOSE_A>
 __global__ void matmul_tiled(const float* __restrict__ A, const float* __restrict__ B,
                              float* __restrict__ C, int M, int K, int N) {
@@ -262,29 +208,7 @@ static void check_tile_resources(int tile, int pad) {
         die("--tile %d needs %zu bytes of shared memory but the device allows %d", tile, shared, maxShared);
 }
 
-// ---- V5 (Week 3, second profiler-guided improvement): register tiling ---------
-// Profiling showed the tiled kernels are limited by the shared-memory pipe:
-// kernel time ~ shared-memory wavefronts, and each multiply-add needs 1.25
-// shared loads (docs/week3.md section 6c). Register tiling raises the work done
-// per shared load:
-//
-//   * a 256-thread block (16 x 16) owns a 64 x 64 tile of C (RT_BM x RT_BN);
-//   * each thread owns a 4 x 4 sub-block of C, kept in 16 registers;
-//   * per k, a thread reads 4 values of A and 4 values of B from shared memory
-//     (one 128-bit load each) and does 4 x 4 = 16 multiply-adds with them.
-//
-//   shared loads per FMA:  tiled 1.25 (scalar)  ->  regtile 2 x 128-bit / 16 = 0.125
-//
-// Shared-memory layout (the Week 3 padding lesson, applied):
-//   As is stored TRANSPOSED, As[k][m], so a thread's 4 A values (rows m..m+3)
-//   are contiguous and can be read with one float4. The transposed store walks
-//   down a column, which with a 64-float row would put 8 threads in one bank.
-//   Padding the row by RT_PAD = 4 floats (not 1) removes that conflict AND keeps
-//   every row 16-byte aligned, so the float4 reads stay legal. Padding by 1
-//   would break the alignment, as the padded kernel showed.
-//
-// Edge handling is the same idea as before: out-of-range elements are loaded as
-// 0.0f and every output store is guarded, so any M, N, K works.
+
 constexpr int RT_BM = 64, RT_BN = 64, RT_BK = 8;  // block tile of C, K step
 constexpr int RT_TM = 4, RT_TN = 4;                // per-thread sub-block of C
 constexpr int RT_PAD = 4;                          // keeps As rows 16-byte aligned
@@ -437,8 +361,6 @@ static GpuRunTimes gpu_run(const std::string& impl, int tile, const float* hA, c
     double t1 = now_ms();
     return {(double)kernel_ms, t1 - t0};
 }
-
-// ---------------------------------------------------------------- main
 
 int main(int argc, char** argv) {
     Args a = parse_args(argc, argv);
