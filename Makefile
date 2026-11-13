@@ -2,7 +2,7 @@ NVCC     ?= nvcc
 CXX      ?= g++
 # GPU architecture. "native" needs CUDA >= 11.5; otherwise e.g. make ARCH=sm_75
 ARCH     ?= native
-NVFLAGS  = -O3 -std=c++14 -arch=$(ARCH)
+NVFLAGS  = -O3 -std=c++14 -arch=$(ARCH) -lineinfo   # -lineinfo: profiler maps metrics to source lines
 CXXFLAGS = -O2 -std=c++14 -Wall -Wextra
 
 all: matmul compare

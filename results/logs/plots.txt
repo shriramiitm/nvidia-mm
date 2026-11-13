@@ -1,0 +1,1 @@
+wrote results/plots/: gflops_by_impl.svg tile_sizes.svg padding_effect.svg kernel_share_e2e.svg extensions.svg percent_of_cublas.svg edge_sweep.svg time_vs_wavefronts.svg

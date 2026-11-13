@@ -57,6 +57,8 @@ for s in "${SHAPES[@]}"; do
       # one normal (non --bench) run = exactly one kernel launch
       ncu --set full --force-overwrite -k "$kfilter" -c 1 -o "$OUT/$name" \
           ./matmul --impl "$impl" --tile "$t" --input "$f" --output data/profile_out.bin >/dev/null
+      # text export of the details page (all sections + Nsight's rule messages)
+      ncu --import "$OUT/$name.ncu-rep" --page details >"$OUT/$name.details.txt" 2>&1
       ncu --csv --log-file "$OUT/$name.csv" --metrics "$METRICS" -k "$kfilter" -c 1 \
           ./matmul --impl "$impl" --tile "$t" --input "$f" --output data/profile_out.bin >/dev/null
     done

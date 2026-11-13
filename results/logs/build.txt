@@ -1,0 +1,2 @@
+nvcc -O3 -std=c++14 -arch=native -o matmul src/matmul.cu -lcublas   # cuBLAS only for the reference (--impl cublas)
+g++ -O2 -std=c++14 -Wall -Wextra -o compare src/compare.cpp

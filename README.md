@@ -29,7 +29,7 @@ it clones a clean copy, saves results to Google Drive as they are written, and d
     src/             matmul.cu (all implementations + CLI), compare.cpp
     scripts/         reproduce.sh (everything), gen.py, check_cpu.py, run_tests.sh, bench.sh,
                      edge_sweep.sh, profile.sh, bank_model.py (predicted bank conflicts),
-                     summarize_profile.py, plot_results.py
+                     summarize_profile.py, extract_rules.py, plot_results.py
     notebooks/       colab_reproduce.ipynb (the full run on Google Colab)
     docs/            weekly notes (week1.md ... week4.md)
     results/         benchmark CSVs, profiler output, plots (created by the scripts)
@@ -54,11 +54,25 @@ row-major, no header. Element `A[i][j]` lives at index `i*K + j`.
     ./matmul --impl cublas  --input in.bin --output out5.bin           # cuBLAS SGEMM reference
     ./compare in.bin ref.bin out.bin               # exit 0 = PASS
 
-## Results so far (Tesla T4, Colab, 12 Nov 2026)
-Best kernel: `tiled` with T = 32, 681–1042 GFLOP/s, 1.2–2.9× faster than `naive` and 59–170× faster than the
-single-thread CPU (kernel-only). `padded` is 1.20–1.32× *slower* than `tiled` at T = 32: the tiled kernel
-has no bank conflicts to remove, and the odd row length disables 128-bit shared loads. Details in
-[docs/week2.md](docs/week2.md) and [docs/week3.md](docs/week3.md); plots in `results/plots/`.
+## Results (Tesla T4, Colab, final run 13 Nov 2026)
+All 327 correctness checks pass (`results/tests.txt`). Kernel-only, best of each family:
+
+| | 1024³ | 4096³ | 2048×512×4096 | 1000×513×769 |
+|---|---|---|---|---|
+| naive | 305 GFLOP/s | 415 | 475 | 773 |
+| tiled (T = 32) | 1041 | 816 | 1029 | 673 |
+| padded (T = 32) | 804 | 634 | 755 | 532 |
+| regtile (4×4 per thread) | 3532 | 2879 | 3829 | 2044 |
+| vec128 (8×8 per thread, float4) | **4661** | **5396** | **5815** | **2088** |
+| cuBLAS (reference) | 6162 | 6593 | 7039 | 3681 |
+
+- Register tiling is the biggest single step: **3.0–3.7×** over `tiled`.
+- `vec128` reaches **76–83% of cuBLAS** on the large shapes.
+- `padded` is 21–31% *slower* than `tiled`: the tiled kernel has no bank conflicts to remove, and the odd
+  row length disables 128-bit shared loads.
+
+Full analysis: [docs/week4.md](docs/week4.md). Plots: `results/plots/`. Nsight rule messages for every
+kernel: `results/profile/rules_summary.md`.
 
 ## Tests and benchmarks
     make test      # correctness suite (CPU vs NumPy, GPU vs CPU)
@@ -67,6 +81,7 @@ has no bank conflicts to remove, and the odd row length disables 128-bit shared 
     make profile   # Nsight Compute reports + metric CSVs + SASS in results/profile/ (needs ncu)
     python3 scripts/bank_model.py   # predicted bank conflicts for every variant
     python3 scripts/summarize_profile.py > results/profile_summary.csv   # one table from all ncu CSVs
+    python3 scripts/extract_rules.py > results/profile/rules_summary.md  # Nsight rule messages (needs *.details.txt)
     python3 scripts/plot_results.py   # SVG plots in results/plots/
 
 CPU loop order is i-k-j (see [docs/week1.md](docs/week1.md) for the locality argument).

@@ -49,6 +49,7 @@ step edge_sweep bash scripts/edge_sweep.sh
 if [ "${SKIP_PROFILE:-0}" != 1 ] && command -v ncu >/dev/null; then
   step profile bash scripts/profile.sh
   step profile_summary sh -c 'python3 scripts/summarize_profile.py results/profile > results/profile_summary.csv'
+  step profile_rules sh -c 'python3 scripts/extract_rules.py results/profile > results/profile/rules_summary.md'
 else
   echo "==> profile skipped (SKIP_PROFILE=1 or ncu not found)"
 fi

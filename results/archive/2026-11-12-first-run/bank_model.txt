@@ -1,0 +1,21 @@
+Extra wavefronts (bank conflicts) per block per K-tile step.
+Multiply by blocks * ceil(K/T) for a whole kernel.
+
+variant      T  smem B warps |  st As  st Bs  ld As  ld Bs | worst st As
+------------------------------------------------------------------------
+tiled        8     512     2 |      0      0      0      0 | 1-way
+tiled       16    2048     8 |      0      0      0      0 | 1-way
+tiled       32    8192    32 |      0      0      0      0 | 1-way
+
+padded       8     576     2 |      2      2      0      0 | 2-way
+padded      16    2176     8 |      8      8      0      0 | 2-way
+padded      32    8448    32 |      0      0      0      0 | 1-way
+
+tiled_ta     8     512     2 |      2      0      0      0 | 2-way
+tiled_ta    16    2048     8 |     56      0      0      0 | 8-way
+tiled_ta    32    8192    32 |    992      0      0      0 | 32-way
+
+padded_ta    8     576     2 |      2      2      0      0 | 2-way
+padded_ta   16    2176     8 |      8      8      0      0 | 2-way
+padded_ta   32    8448    32 |      0      0      0      0 | 1-way
+

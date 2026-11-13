@@ -1,12 +1,17 @@
 # Week 2: shared-memory tiling (what changed from Week 1 and why)
 
+> **Which run these numbers come from.** Tables in this file quote the **first** T4 run (12 Nov 2026), now
+> archived in `results/archive/2026-11-12-first-run/`. The final, complete run (13 Nov) is in `results/` and
+> is analysed in [week4.md](week4.md). Most timings agree within ~10% between the two Colab sessions; a few
+> differ by 1.4–2× (week4.md §4g). The conclusions here hold in both runs.
+
 **Week 2 goal:** implement the shared-memory tiled kernel, compare at least two tile sizes, profile it, and use the profiler results to justify the optimization.
 
 > **Status of the numbers in this file.**
 > Sections 1–6 (counts, formulas, code behaviour) come from the problem sizes and the code.
 > Sections 7–9 are **measured** on a Tesla T4 (Google Colab, 12 Nov 2026, CUDA 13.0). Raw data:
-> `results/results.csv` (timings), `results/profile/` and `results/profile_summary.csv` (Nsight Compute).
-> The correctness suite has not been logged on the GPU yet (see section 10).
+> `results/archive/2026-11-12-first-run/results.csv` (timings), `results/profile/` and `results/profile_summary.csv` (Nsight Compute).
+> The correctness suite passes on the GPU (final run: 327 / 327, `results/tests.txt`).
 
 ---
 
@@ -223,8 +228,8 @@ Environment: Tesla T4 (driver 580.82.07, max SM clock 1590 MHz, 70 W power limit
 
 ## 10. Week 2 milestone checklist
 
-1. ☐ `make test` passes for `naive` and `tiled` at tile sizes 8, 16, 32. **Not logged yet: run `bash scripts/run_tests.sh | tee results/tests.txt`.**
-2. ☑ `make bench` run, `results/results.csv` saved.
+1. ☑ `make test` passes for `naive` and `tiled` at tile sizes 8, 16, 32 (final run: 327 / 327, `results/tests.txt`).
+2. ☑ `make bench` run, `results/archive/2026-11-12-first-run/results.csv` saved.
 3. ☑ `make profile` run, `.ncu-rep` files kept.
 4. ☑ Section 7 table filled from the profiler.
 5. ☑ Section 8, entries 1 and 2 completed with measured evidence.

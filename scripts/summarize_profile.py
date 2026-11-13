@@ -32,7 +32,7 @@ SHORT = {
     "dram__bytes_read.sum": "dram_read_bytes",
     "dram__bytes_write.sum": "dram_write_bytes",
 }
-NAME = re.compile(r"^(?P<impl>[a-z_]+?)(?:_T(?P<tile>\d+))?_(?P<M>\d+)x(?P<K>\d+)x(?P<N>\d+)\.csv$")
+NAME = re.compile(r"^(?P<impl>[a-z0-9_]+?)(?:_T(?P<tile>\d+))?_(?P<M>\d+)x(?P<K>\d+)x(?P<N>\d+)\.csv$")
 
 
 def main():

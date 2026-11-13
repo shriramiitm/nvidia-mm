@@ -285,32 +285,7 @@ matmul_regtile(const float* __restrict__ A, const float* __restrict__ B, float* 
     }
 }
 
-// ---- V6 (extension): register tiling + vectorized (float4) memory access -----
-// Starts from regtile and makes every memory access 128-bit wide where legal:
-//   global loads of A and B, the shared-memory store of B, the shared-memory
-//   reads of A and B, and the global store of C.
-// Two instantiations:
-//   vec     BM = BN = 64,  TM = TN = 4  (same tiling as regtile: vectorization is
-//           the ONLY difference, so it measures what float4 access alone buys)
-//   vec128  BM = BN = 128, TM = TN = 8  (bigger block and per-thread tile, the
-//           usual configuration of this kernel design; changes two things at once)
-// Both use 256 threads and BK = 8.
-//
-// Correctness for any M, N, K (the usual float4 kernel assumes multiples of the tile):
-//   * a float4 global load/store needs a 16-byte-aligned address. Row r of A
-//     starts at r*K floats, so A rows are aligned only when K % 4 == 0; B and C
-//     rows only when N % 4 == 0. Otherwise every access takes the scalar path.
-//   * a float4 is used only when all 4 elements are inside the matrix; edge
-//     elements are loaded one by one with zero fill, and C stores are guarded.
-//   * C is written, never read (no beta * C term: C = A * B, and the output
-//     buffer is uninitialised).
-// Shared-memory layout: As is transposed (As[k][m]) with its row padded by 4
-// floats, which keeps rows 16-byte aligned for float4 reads and makes the
-// transposed scalar stores conflict-free (same reasoning as regtile).
-// For TN = 8, a thread's 8 columns are two groups of 4, BN/2 apart (cols
-// tx*4..+3 and BN/2+tx*4..+3), not 8 adjacent ones: adjacent 8-float chunks
-// would put the float4 reads of a quarter-warp 32 bytes apart, a 2-way bank
-// conflict. Rows are split the same way for TM = 8.
+
 template <int BM, int BN, int BK, int TM, int TN>
 __global__ void __launch_bounds__((BM / TM) * (BN / TN))
 matmul_vec(const float* __restrict__ A, const float* __restrict__ B, float* __restrict__ C, int M, int K, int N) {
@@ -430,14 +405,7 @@ static bool is_tiled(const std::string& impl) {
 }
 
 // ---- External reference: cuBLAS SGEMM ---------------------------------------
-// NOT one of the required implementations; only a performance yardstick.
-// cuBLAS is column-major. A row-major M x N matrix C has the same bytes as a
-// column-major N x M matrix, i.e. C^T. Since C^T = B^T A^T, and row-major B and
-// A are column-major B^T and A^T, one column-major SGEMM computes row-major C:
-//     C^T (N x M) = B^T (N x K) * A^T (K x M),  leading dimensions N, K, N.
-// The handle is created once, before any timing, like the CUDA context.
-// Default math mode: plain FP32 (the T4 has no TF32; on newer GPUs cuBLAS only
-// uses TF32 when asked to).
+
 static cublasHandle_t g_cublas = nullptr;
 
 static void launch_cublas(const float* dA, const float* dB, float* dC, int M, int K, int N) {

@@ -21,40 +21,47 @@
 <line x1='64' x2='740' y1='92.0' y2='92.0' stroke='#e6e5e1' stroke-width='1'/>
 <text x='56.0' y='96.0' font-family='Helvetica, Arial, sans-serif' font-size='10' fill='#8a8984' text-anchor='end' font-weight='400'>1250</text>
 <text x='16.0' y='218.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400' transform='rotate(-90 16 218.0)'>GFLOP/s</text>
-<path d='M78.6,344.0 V210.8 Q78.6,206.8 82.6,206.8 H108.6 Q112.6,206.8 112.6,210.8 V344.0 Z' fill='#2a78d6'><title>256×256×256 · tiled: 681 GFLOP/s</title></path>
-<text x='95.6' y='202.8' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>681</text>
-<path d='M114.6,344.0 V233.8 Q114.6,229.8 118.6,229.8 H144.6 Q148.6,229.8 148.6,233.8 V344.0 Z' fill='#eb6834'><title>256×256×256 · padded: 567 GFLOP/s</title></path>
-<text x='131.6' y='225.8' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>567</text>
-<path d='M150.6,344.0 V262.0 Q150.6,258.0 154.6,258.0 H180.6 Q184.6,258.0 184.6,262.0 V344.0 Z' fill='#1baf7a'><title>256×256×256 · tiled_ta (32-way store conflicts): 427 GFLOP/s</title></path>
-<text x='167.6' y='254.0' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>427</text>
-<text x='131.6' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>256×256×256</text>
-<path d='M213.8,344.0 V138.0 Q213.8,134.0 217.8,134.0 H243.8 Q247.8,134.0 247.8,138.0 V344.0 Z' fill='#2a78d6'><title>1024×1024×1024 · tiled: 1042 GFLOP/s</title></path>
-<text x='230.8' y='130.0' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>1042</text>
-<path d='M249.8,344.0 V185.5 Q249.8,181.5 253.8,181.5 H279.8 Q283.8,181.5 283.8,185.5 V344.0 Z' fill='#eb6834'><title>1024×1024×1024 · padded: 806 GFLOP/s</title></path>
-<text x='266.8' y='177.5' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>806</text>
-<path d='M285.8,344.0 V229.6 Q285.8,225.6 289.8,225.6 H315.8 Q319.8,225.6 319.8,229.6 V344.0 Z' fill='#1baf7a'><title>1024×1024×1024 · tiled_ta (32-way store conflicts): 587 GFLOP/s</title></path>
-<text x='302.8' y='221.6' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>587</text>
-<text x='266.8' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>1024×1024×1024</text>
-<path d='M349.0,344.0 V168.6 Q349.0,164.6 353.0,164.6 H379.0 Q383.0,164.6 383.0,168.6 V344.0 Z' fill='#2a78d6'><title>4096×4096×4096 · tiled: 890 GFLOP/s</title></path>
-<text x='366.0' y='160.6' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>890</text>
-<path d='M385.0,344.0 V205.5 Q385.0,201.5 389.0,201.5 H415.0 Q419.0,201.5 419.0,205.5 V344.0 Z' fill='#eb6834'><title>4096×4096×4096 · padded: 707 GFLOP/s</title></path>
-<text x='402.0' y='197.5' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>707</text>
-<path d='M421.0,344.0 V234.1 Q421.0,230.1 425.0,230.1 H451.0 Q455.0,230.1 455.0,234.1 V344.0 Z' fill='#1baf7a'><title>4096×4096×4096 · tiled_ta (32-way store conflicts): 565 GFLOP/s</title></path>
-<text x='438.0' y='226.1' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>565</text>
-<text x='402.0' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>4096×4096×4096</text>
-<path d='M484.2,344.0 V139.4 Q484.2,135.4 488.2,135.4 H514.2 Q518.2,135.4 518.2,139.4 V344.0 Z' fill='#2a78d6'><title>2048×512×4096 · tiled: 1035 GFLOP/s</title></path>
-<text x='501.2' y='131.4' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>1035</text>
-<path d='M520.2,344.0 V190.3 Q520.2,186.3 524.2,186.3 H550.2 Q554.2,186.3 554.2,190.3 V344.0 Z' fill='#eb6834'><title>2048×512×4096 · padded: 782 GFLOP/s</title></path>
-<text x='537.2' y='182.3' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>782</text>
-<path d='M556.2,344.0 V226.6 Q556.2,222.6 560.2,222.6 H586.2 Q590.2,222.6 590.2,226.6 V344.0 Z' fill='#1baf7a'><title>2048×512×4096 · tiled_ta (32-way store conflicts): 602 GFLOP/s</title></path>
-<text x='573.2' y='218.6' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>602</text>
-<text x='537.2' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>2048×512×4096</text>
-<path d='M619.4,344.0 V155.7 Q619.4,151.7 623.4,151.7 H649.4 Q653.4,151.7 653.4,155.7 V344.0 Z' fill='#2a78d6'><title>1000×513×769 · tiled: 954 GFLOP/s</title></path>
-<text x='636.4' y='147.7' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>954</text>
-<path d='M655.4,344.0 V199.5 Q655.4,195.5 659.4,195.5 H685.4 Q689.4,195.5 689.4,199.5 V344.0 Z' fill='#eb6834'><title>1000×513×769 · padded: 736 GFLOP/s</title></path>
-<text x='672.4' y='191.5' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>736</text>
-<path d='M691.4,344.0 V240.4 Q691.4,236.4 695.4,236.4 H721.4 Q725.4,236.4 725.4,240.4 V344.0 Z' fill='#1baf7a'><title>1000×513×769 · tiled_ta (32-way store conflicts): 534 GFLOP/s</title></path>
-<text x='708.4' y='232.4' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>534</text>
-<text x='672.4' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>1000×513×769</text>
+<path d='M77.0,344.0 V226.0 Q77.0,222.0 81.0,222.0 H100.6 Q104.6,222.0 104.6,226.0 V344.0 Z' fill='#2a78d6'><title>256×256×256 · tiled: 605 GFLOP/s</title></path>
+<text x='90.8' y='218.0' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>605</text>
+<path d='M106.6,344.0 V264.0 Q106.6,260.0 110.6,260.0 H130.1 Q134.1,260.0 134.1,264.0 V344.0 Z' fill='#eb6834'><title>256×256×256 · padded: 417 GFLOP/s</title></path>
+<text x='120.3' y='256.0' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>417</text>
+<path d='M136.1,344.0 V291.7 Q136.1,287.7 140.1,287.7 H159.7 Q163.7,287.7 163.7,291.7 V344.0 Z' fill='#1baf7a'><title>256×256×256 · tiled_ta (32-way store conflicts): 279 GFLOP/s</title></path>
+<text x='149.9' y='283.7' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>279</text>
+<text x='120.3' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>256×256×256</text>
+<path d='M189.7,344.0 V138.1 Q189.7,134.1 193.7,134.1 H213.2 Q217.2,134.1 217.2,138.1 V344.0 Z' fill='#2a78d6'><title>1024×1024×1024 · tiled: 1041 GFLOP/s</title></path>
+<text x='203.4' y='130.1' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>1041</text>
+<path d='M219.2,344.0 V186.0 Q219.2,182.0 223.2,182.0 H242.8 Q246.8,182.0 246.8,186.0 V344.0 Z' fill='#eb6834'><title>1024×1024×1024 · padded: 804 GFLOP/s</title></path>
+<text x='233.0' y='178.0' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>804</text>
+<path d='M248.8,344.0 V230.6 Q248.8,226.6 252.8,226.6 H272.3 Q276.3,226.6 276.3,230.6 V344.0 Z' fill='#1baf7a'><title>1024×1024×1024 · tiled_ta (32-way store conflicts): 582 GFLOP/s</title></path>
+<text x='262.6' y='222.6' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>582</text>
+<text x='233.0' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>1024×1024×1024</text>
+<path d='M302.3,344.0 V183.5 Q302.3,179.5 306.3,179.5 H325.9 Q329.9,179.5 329.9,183.5 V344.0 Z' fill='#2a78d6'><title>4096×4096×4096 · tiled: 816 GFLOP/s</title></path>
+<text x='316.1' y='175.5' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>816</text>
+<path d='M331.9,344.0 V220.1 Q331.9,216.1 335.9,216.1 H355.4 Q359.4,216.1 359.4,220.1 V344.0 Z' fill='#eb6834'><title>4096×4096×4096 · padded: 634 GFLOP/s</title></path>
+<text x='345.7' y='212.1' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>634</text>
+<path d='M361.4,344.0 V243.9 Q361.4,239.9 365.4,239.9 H385.0 Q389.0,239.9 389.0,243.9 V344.0 Z' fill='#1baf7a'><title>4096×4096×4096 · tiled_ta (32-way store conflicts): 517 GFLOP/s</title></path>
+<text x='375.2' y='235.9' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>517</text>
+<text x='345.7' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>4096×4096×4096</text>
+<path d='M415.0,344.0 V140.5 Q415.0,136.5 419.0,136.5 H438.6 Q442.6,136.5 442.6,140.5 V344.0 Z' fill='#2a78d6'><title>2048×512×4096 · tiled: 1029 GFLOP/s</title></path>
+<text x='428.8' y='132.5' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>1029</text>
+<path d='M444.6,344.0 V195.8 Q444.6,191.8 448.6,191.8 H468.1 Q472.1,191.8 472.1,195.8 V344.0 Z' fill='#eb6834'><title>2048×512×4096 · padded: 755 GFLOP/s</title></path>
+<text x='458.3' y='187.8' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>755</text>
+<path d='M474.1,344.0 V230.2 Q474.1,226.2 478.1,226.2 H497.7 Q501.7,226.2 501.7,230.2 V344.0 Z' fill='#1baf7a'><title>2048×512×4096 · tiled_ta (32-way store conflicts): 584 GFLOP/s</title></path>
+<text x='487.9' y='222.2' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>584</text>
+<text x='458.3' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>2048×512×4096</text>
+<path d='M527.7,344.0 V212.4 Q527.7,208.4 531.7,208.4 H551.2 Q555.2,208.4 555.2,212.4 V344.0 Z' fill='#2a78d6'><title>1000×513×769 · tiled: 673 GFLOP/s</title></path>
+<text x='541.4' y='204.4' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>673</text>
+<path d='M557.2,344.0 V240.7 Q557.2,236.7 561.2,236.7 H580.8 Q584.8,236.7 584.8,240.7 V344.0 Z' fill='#eb6834'><title>1000×513×769 · padded: 532 GFLOP/s</title></path>
+<text x='571.0' y='232.7' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>532</text>
+<path d='M586.8,344.0 V267.1 Q586.8,263.1 590.8,263.1 H610.3 Q614.3,263.1 614.3,267.1 V344.0 Z' fill='#1baf7a'><title>1000×513×769 · tiled_ta (32-way store conflicts): 401 GFLOP/s</title></path>
+<text x='600.6' y='259.1' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>401</text>
+<text x='571.0' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>1000×513×769</text>
+<path d='M640.3,344.0 V176.6 Q640.3,172.6 644.3,172.6 H663.9 Q667.9,172.6 667.9,176.6 V344.0 Z' fill='#2a78d6'><title>256×16384×256 · tiled: 850 GFLOP/s</title></path>
+<text x='654.1' y='168.6' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>850</text>
+<path d='M669.9,344.0 V215.2 Q669.9,211.2 673.9,211.2 H693.4 Q697.4,211.2 697.4,215.2 V344.0 Z' fill='#eb6834'><title>256×16384×256 · padded: 659 GFLOP/s</title></path>
+<text x='683.7' y='207.2' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>659</text>
+<path d='M699.4,344.0 V250.4 Q699.4,246.4 703.4,246.4 H723.0 Q727.0,246.4 727.0,250.4 V344.0 Z' fill='#1baf7a'><title>256×16384×256 · tiled_ta (32-way store conflicts): 484 GFLOP/s</title></path>
+<text x='713.2' y='242.4' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>484</text>
+<text x='683.7' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>256×16384×256</text>
 <line x1='64' x2='740' y1='344.0' y2='344.0' stroke='#8a8984' stroke-width='1'/>
 </svg>

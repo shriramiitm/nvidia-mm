@@ -217,12 +217,9 @@ def main():
     # 6. Edge-effect sweep
     e, eshapes = load(os.path.join(root, "edge_sweep.csv"))
     if e:
-        spec = [m for m in MAIN]
-        spec[1] = ("tiled (T=32)", "tiled", "32", S2)
-        spec[2] = ("padded (T=32)", "padded", "32", S3)
-        vals, used = series_values(e, eshapes, spec)
+        vals, used = series_values(e, eshapes, EXT)
         grouped_bars(os.path.join(out, "edge_sweep.svg"), "Edge effects: n − 1, n, n + 1",
-                     "Kernel-only GFLOP/s for square shapes around multiples of every tile size (32) and block (64).",
+                     "Kernel-only GFLOP/s. n ± 1 are odd sizes: no row is 16-byte aligned, so vec / vec128 fall back to scalar access.",
                      [label(sh) for sh in eshapes], used, vals, "GFLOP/s")
         written.append("edge_sweep.svg")
 

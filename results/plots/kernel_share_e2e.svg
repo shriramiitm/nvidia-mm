@@ -1,7 +1,7 @@
 <svg xmlns='http://www.w3.org/2000/svg' width='760' height='400' viewBox='0 0 760 400'>
 <rect width='100%' height='100%' fill='#fcfcfb'/>
 <text x='24.0' y='30.0' font-family='Helvetica, Arial, sans-serif' font-size='16' fill='#0b0b0b' text-anchor='start' font-weight='600'>Share of end-to-end GPU time spent in the kernel</text>
-<text x='24.0' y='50.0' font-family='Helvetica, Arial, sans-serif' font-size='12' fill='#52514e' text-anchor='start' font-weight='400'>tiled, T = 32. The rest is cudaMalloc, host↔device copies and cudaFree.</text>
+<text x='24.0' y='50.0' font-family='Helvetica, Arial, sans-serif' font-size='12' fill='#52514e' text-anchor='start' font-weight='400'>regtile. The rest is cudaMalloc, host↔device copies and cudaFree.</text>
 <line x1='64' x2='740' y1='344.0' y2='344.0' stroke='#e6e5e1' stroke-width='1'/>
 <text x='56.0' y='348.0' font-family='Helvetica, Arial, sans-serif' font-size='10' fill='#8a8984' text-anchor='end' font-weight='400'>0</text>
 <line x1='64' x2='740' y1='293.6' y2='293.6' stroke='#e6e5e1' stroke-width='1'/>
@@ -15,20 +15,23 @@
 <line x1='64' x2='740' y1='92.0' y2='92.0' stroke='#e6e5e1' stroke-width='1'/>
 <text x='56.0' y='96.0' font-family='Helvetica, Arial, sans-serif' font-size='10' fill='#8a8984' text-anchor='end' font-weight='400'>100</text>
 <text x='16.0' y='218.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400' transform='rotate(-90 16 218.0)'>% of end-to-end time</text>
-<path d='M114.6,344.0 V321.2 Q114.6,317.2 118.6,317.2 H144.6 Q148.6,317.2 148.6,321.2 V344.0 Z' fill='#2a78d6'><title>256×256×256 · kernel share: 11% % of end-to-end time</title></path>
-<text x='131.6' y='313.2' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>11%</text>
-<text x='131.6' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>256×256×256</text>
-<path d='M249.8,344.0 V254.8 Q249.8,250.8 253.8,250.8 H279.8 Q283.8,250.8 283.8,254.8 V344.0 Z' fill='#2a78d6'><title>1024×1024×1024 · kernel share: 37% % of end-to-end time</title></path>
-<text x='266.8' y='246.8' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>37%</text>
-<text x='266.8' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>1024×1024×1024</text>
-<path d='M385.0,344.0 V157.9 Q385.0,153.9 389.0,153.9 H415.0 Q419.0,153.9 419.0,157.9 V344.0 Z' fill='#2a78d6'><title>4096×4096×4096 · kernel share: 75% % of end-to-end time</title></path>
-<text x='402.0' y='149.9' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>75%</text>
-<text x='402.0' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>4096×4096×4096</text>
-<path d='M520.2,344.0 V241.7 Q520.2,237.7 524.2,237.7 H550.2 Q554.2,237.7 554.2,241.7 V344.0 Z' fill='#2a78d6'><title>2048×512×4096 · kernel share: 42% % of end-to-end time</title></path>
-<text x='537.2' y='233.7' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>42%</text>
-<text x='537.2' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>2048×512×4096</text>
-<path d='M655.4,344.0 V277.4 Q655.4,273.4 659.4,273.4 H685.4 Q689.4,273.4 689.4,277.4 V344.0 Z' fill='#2a78d6'><title>1000×513×769 · kernel share: 28% % of end-to-end time</title></path>
-<text x='672.4' y='269.4' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>28%</text>
-<text x='672.4' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>1000×513×769</text>
+<path d='M103.3,344.0 V324.6 Q103.3,320.6 107.3,320.6 H133.3 Q137.3,320.6 137.3,324.6 V344.0 Z' fill='#2a78d6'><title>256×256×256 · kernel share: 9% % of end-to-end time</title></path>
+<text x='120.3' y='316.6' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>9%</text>
+<text x='120.3' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>256×256×256</text>
+<path d='M216.0,344.0 V309.9 Q216.0,305.9 220.0,305.9 H246.0 Q250.0,305.9 250.0,309.9 V344.0 Z' fill='#2a78d6'><title>1024×1024×1024 · kernel share: 15% % of end-to-end time</title></path>
+<text x='233.0' y='301.9' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>15%</text>
+<text x='233.0' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>1024×1024×1024</text>
+<path d='M328.7,344.0 V226.3 Q328.7,222.3 332.7,222.3 H358.7 Q362.7,222.3 362.7,226.3 V344.0 Z' fill='#2a78d6'><title>4096×4096×4096 · kernel share: 48% % of end-to-end time</title></path>
+<text x='345.7' y='218.3' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>48%</text>
+<text x='345.7' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>4096×4096×4096</text>
+<path d='M441.3,344.0 V307.6 Q441.3,303.6 445.3,303.6 H471.3 Q475.3,303.6 475.3,307.6 V344.0 Z' fill='#2a78d6'><title>2048×512×4096 · kernel share: 16% % of end-to-end time</title></path>
+<text x='458.3' y='299.6' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>16%</text>
+<text x='458.3' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>2048×512×4096</text>
+<path d='M554.0,344.0 V309.0 Q554.0,305.0 558.0,305.0 H584.0 Q588.0,305.0 588.0,309.0 V344.0 Z' fill='#2a78d6'><title>1000×513×769 · kernel share: 15% % of end-to-end time</title></path>
+<text x='571.0' y='301.0' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>15%</text>
+<text x='571.0' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>1000×513×769</text>
+<path d='M666.7,344.0 V300.5 Q666.7,296.5 670.7,296.5 H696.7 Q700.7,296.5 700.7,300.5 V344.0 Z' fill='#2a78d6'><title>256×16384×256 · kernel share: 19% % of end-to-end time</title></path>
+<text x='683.7' y='292.5' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>19%</text>
+<text x='683.7' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>256×16384×256</text>
 <line x1='64' x2='740' y1='344.0' y2='344.0' stroke='#8a8984' stroke-width='1'/>
 </svg>

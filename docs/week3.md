@@ -1,5 +1,10 @@
 # Week 3: shared-memory padding and the profile-optimize loop
 
+> **Which run these numbers come from.** Tables in this file quote the **first** T4 run (12 Nov 2026), now
+> archived in `results/archive/2026-11-12-first-run/`. The final, complete run (13 Nov) is in `results/` and
+> is analysed in [week4.md](week4.md). Most timings agree within ~10% between the two Colab sessions; a few
+> differ by 1.4–2× (week4.md §4g). The conclusions here hold in both runs.
+
 **Week 3 goal (from the spec):** add shared-memory padding while keeping the tiled kernel's arithmetic, compare bank-conflict metrics for tiled and padded, repeat the profile-optimize cycle on divisible and irregular shapes, and record what worked and what didn't.
 
 **Milestone:** present a second profiler-guided improvement, and explain whether padding helps on the selected GPU.
@@ -10,7 +15,7 @@
 > - Sections 6–8 are **measured** on a Tesla T4 (Google Colab, 12 Nov 2026, CUDA 13.0). Raw data:
 >   `results/results.csv`, `results/profile/`, `results/profile_summary.csv`, `results/profile/matmul.sass`.
 > - **Every bank-conflict prediction matched the profiler exactly** (section 6a).
-> - The correctness suite has not been logged on the GPU yet (see section 9).
+> - The correctness suite passes on the GPU (final run: 327 / 327, `results/tests.txt`).
 
 ---
 
@@ -247,7 +252,7 @@ Padded runs at a **higher** throughput percentage (88% vs 74%) while being **slo
 | 2 | Transposed A tile, no padding (`tiled_ta`) | 32-way store conflict at T = 32 makes it slower than tiled | Confirmed: 32.5 M store conflicts; 1.58–1.79× slower than tiled at T = 32 | No (demonstration) |
 | 3 | Transposed A tile + padding (`padded_ta`) | Padding removes all of experiment 2's conflicts | **Confirmed. Conflicts 32.5 M → 0; 1.22–1.39× faster than tiled_ta at T = 32.** Timing and profile are identical to `padded`: once conflicts are gone, both are limited by the same 32 scalar loads per step | Demonstration: **padding works when there's a column access to fix** |
 | 4 | Tile size with padding | Same best T as without padding | Confirmed: T = 32 is fastest for padded on every shape too | T = 32 default |
-| 5 | **Register tiling (`regtile`)**, second profiler-guided improvement | Cut shared loads per FMA 1.25 → 0.125 (section 8) | *pending GPU run* | |
+| 5 | **Register tiling (`regtile`)**, second profiler-guided improvement | Cut shared loads per FMA 1.25 → 0.125 (section 8) | **3.0–3.7× faster than tiled on the large shapes** (final run) | **Yes** |
 
 **Answer to "does padding help on this GPU?"** Not for this kernel. The Week 2 tiled kernel reads shared
 memory only along rows (`As[ty][k]` broadcast, `Bs[k][tx]` consecutive), so it has no bank conflicts to
@@ -323,16 +328,16 @@ PAD = 0 gives an 8-way As store, PAD = 4 gives 1-way.
 | Hypothesis | Computing a 4×4 block per thread from two 128-bit shared loads per k cuts shared loads per FMA 10×, wavefronts ≥3× |
 | Change | `matmul_regtile`: 64×64 block tile, BK = 8, 4×4 per thread, As transposed with row padding 4 |
 | Expected effect | Wavefronts ≥3× lower, 0 bank conflicts; kernel time 1.5–3× lower than tiled T = 32 |
-| Measured effect | *pending: run on the GPU* |
-| Conclusion | *pending* |
+| Measured effect | Final run (13 Nov), tiled T=32 → regtile kernel time: 1024³ 2.063 → 0.608 ms (**3.39×**), 4096³ **3.53×**, 2048×512×4096 **3.72×**, 1000×513×769 **3.04×**, 256³ 1.27×. Profile (1024³): shared load instructions 41.9 M → 4.19 M (10×); shared wavefronts 52.4 M → 13.6 M (3.9×); 0 bank conflicts; SASS shows the two `LDS.U.128` per k as designed |
+| Conclusion | **Hypothesis confirmed, effect larger than predicted** (3.0–3.7× vs the predicted 1.5–3×). The shared-memory pipe is no longer the limiter: MIO stalls fall from 65% to 44% of cycles, and SM and memory throughput are both below 50%. Nsight now points at latency, a 1.6-wave tail (256 blocks for 160 slots, est. up to 50%), and uncoalesced C stores (8 of 32 bytes per sector), which `vec` later fixes. Full analysis: docs/week4.md §4d–4f |
 
 ---
 
 ## 9. Week 3 milestone checklist
 
-1. ☐ `make test` passes for tiled, padded, tiled_ta and padded_ta at T = 8, 16, 32. **Not logged yet.**
+1. ☑ `make test` passes for tiled, padded, tiled_ta and padded_ta at T = 8, 16, 32 (final run: 327 / 327, `results/tests.txt`).
 2. ☑ `make profile` run; tables 6a and 6c filled in; predicted and measured conflicts compared (exact match).
 3. ☑ `make bench` run; table 6b filled in.
 4. ☑ "Does padding help on this GPU?" answered with evidence (section 7).
-5. ☐ Second profiler-guided improvement: diagnosed, chosen and **implemented** (`regtile`, section 8); **not yet measured on the GPU**.
+5. ☑ Second profiler-guided improvement: diagnosed, implemented and measured (`regtile`, 3.0–3.7×, section 8).
 6. ☑ Experiment log (section 7) includes the unsuccessful experiment (padding the tiled kernel).

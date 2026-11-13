@@ -1,5 +1,10 @@
 # Week 1: CPU baseline, test infrastructure, naive CUDA
 
+> **Which run these numbers come from.** Tables in this file quote the **first** T4 run (12 Nov 2026), now
+> archived in `results/archive/2026-11-12-first-run/`. The final, complete run (13 Nov) is in `results/` and
+> is analysed in [week4.md](week4.md). Most timings agree within ~10% between the two Colab sessions; a few
+> differ by 1.4–2× (week4.md §4g). The conclusions here hold in both runs.
+
 **Week 1 goal (from the spec):** the CPU and naive GPU versions pass the correctness suite and have an initial performance table.
 
 Code for this week is tagged `week1` in git (`git checkout week1` to see it as it was).
@@ -78,9 +83,9 @@ Run (on the GPU machine):
 make && IMPLS="naive" bash scripts/run_tests.sh | tee results/tests_week1.txt
 ```
 
-Result: **not recorded yet.** The Colab results bundle (12 Nov 2026) has benchmark and profiler output but no
-test log. Re-run `bash scripts/run_tests.sh | tee results/tests.txt` and keep the file. The benchmark
-numbers below are only meaningful once the suite passes.
+Result: **passed.** The first run (12 Nov) had no test log. The final run (13 Nov, `results/tests.txt`)
+passes all 327 checks, including cpu vs NumPy and naive on all 18 shapes. Worst naive error is 1.14e-5,
+against a tolerance ≥ 0.051 at K = 513 (week4.md §4a).
 
 ---
 
@@ -88,7 +93,7 @@ numbers below are only meaningful once the suite passes.
 
 Measured on Google Colab, 12 Nov 2026: **Tesla T4** (driver 580.82.07, max SM clock 1590 MHz, 70 W),
 2-vCPU Intel Xeon @ 2.00 GHz, CUDA 13.0, `nvcc -O3 -std=c++14 -arch=native`. Raw data:
-`results/results.csv`, `results/env.txt`. Command: `bash scripts/bench.sh`.
+`results/archive/2026-11-12-first-run/results.csv`, `results/env.txt`. Command: `bash scripts/bench.sh`.
 GPU: median of 20 runs after 3 warm-ups. CPU: median of 3 runs (1 for the two largest shapes).
 
 | Shape (M, K, N) | CPU (ms) | Naive kernel (ms) | Naive end-to-end (ms) | Kernel speedup vs CPU | End-to-end speedup vs CPU | CPU GFLOP/s | Naive kernel GFLOP/s |
@@ -119,6 +124,6 @@ What the numbers show:
 
 ## 6. Week 1 milestone checklist
 
-1. ☐ `run_tests.sh` passes for `cpu` and `naive` on the GPU machine (output saved in `results/`). **No test log yet.**
+1. ☑ `run_tests.sh` passes for `cpu` and `naive` on the GPU (final run, `results/tests.txt`: 327 / 327).
 2. ☑ `bench.sh` run, table in section 5 filled in.
 3. ☐ `results/` committed.
