@@ -15,23 +15,32 @@
 <line x1='64' x2='740' y1='92.0' y2='92.0' stroke='#e6e5e1' stroke-width='1'/>
 <text x='56.0' y='96.0' font-family='Helvetica, Arial, sans-serif' font-size='10' fill='#8a8984' text-anchor='end' font-weight='400'>10</text>
 <text x='16.0' y='218.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400' transform='rotate(-90 16 218.0)'>TFLOP/s</text>
-<path d='M103.3,344.0 V344.0 Q103.3,343.9 103.5,343.9 H137.2 Q137.3,343.9 137.3,344.0 V344.0 Z' fill='#2a78d6'><title>CPU, i-k-j · TFLOP/s: 0.01 TFLOP/s</title></path>
-<text x='120.3' y='339.9' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>0.01</text>
-<text x='120.3' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>CPU, i-k-j</text>
-<path d='M216.0,344.0 V337.5 Q216.0,333.5 220.0,333.5 H246.0 Q250.0,333.5 250.0,337.5 V344.0 Z' fill='#2a78d6'><title>Global-memory coalesced · TFLOP/s: 0.41 TFLOP/s</title></path>
-<text x='233.0' y='329.5' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>0.41</text>
-<text x='233.0' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>Global-memory coalesced</text>
-<path d='M328.7,344.0 V327.4 Q328.7,323.4 332.7,323.4 H358.7 Q362.7,323.4 362.7,327.4 V344.0 Z' fill='#2a78d6'><title>Shared memory (T=32) · TFLOP/s: 0.82 TFLOP/s</title></path>
-<text x='345.7' y='319.4' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>0.82</text>
-<text x='345.7' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>Shared memory (T=32)</text>
-<path d='M441.3,344.0 V332.0 Q441.3,328.0 445.3,328.0 H471.3 Q475.3,328.0 475.3,332.0 V344.0 Z' fill='#2a78d6'><title>Shared + padding (T=32) · TFLOP/s: 0.63 TFLOP/s</title></path>
-<text x='458.3' y='324.0' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>0.63</text>
-<text x='458.3' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>Shared + padding (T=32)</text>
-<path d='M554.0,344.0 V212.0 Q554.0,208.0 558.0,208.0 H584.0 Q588.0,208.0 588.0,212.0 V344.0 Z' fill='#2a78d6'><title>Vectorized (float4, 8×8) · TFLOP/s: 5.40 TFLOP/s</title></path>
-<text x='571.0' y='204.0' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>5.40</text>
-<text x='571.0' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>Vectorized (float4, 8×8)</text>
-<path d='M666.7,344.0 V181.9 Q666.7,177.9 670.7,177.9 H696.7 Q700.7,177.9 700.7,181.9 V344.0 Z' fill='#2a78d6'><title>cuBLAS (reference) · TFLOP/s: 6.59 TFLOP/s</title></path>
-<text x='683.7' y='173.9' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>6.59</text>
-<text x='683.7' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>cuBLAS (reference)</text>
+<path d='M84.6,344.0 V344.0 Q84.6,343.9 84.7,343.9 H118.4 Q118.6,343.9 118.6,344.0 V344.0 Z' fill='#2a78d6'><title>CPU · TFLOP/s: 0.01 TFLOP/s</title></path>
+<text x='101.6' y='339.9' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>0.01</text>
+<text x='101.6' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>CPU</text>
+<path d='M159.7,344.0 V344.0 Q159.7,341.0 162.7,341.0 H190.6 Q193.7,341.0 193.7,344.0 V344.0 Z' fill='#2a78d6'><title>Naive · TFLOP/s: 0.12 TFLOP/s</title></path>
+<text x='176.7' y='337.0' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>0.12</text>
+<text x='176.7' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>Naive</text>
+<path d='M234.8,344.0 V337.5 Q234.8,333.5 238.8,333.5 H264.8 Q268.8,333.5 268.8,337.5 V344.0 Z' fill='#2a78d6'><title>Coalesced · TFLOP/s: 0.42 TFLOP/s</title></path>
+<text x='251.8' y='329.5' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>0.42</text>
+<text x='251.8' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>Coalesced</text>
+<path d='M309.9,344.0 V326.8 Q309.9,322.8 313.9,322.8 H339.9 Q343.9,322.8 343.9,326.8 V344.0 Z' fill='#2a78d6'><title>Shared · TFLOP/s: 0.84 TFLOP/s</title></path>
+<text x='326.9' y='318.8' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>0.84</text>
+<text x='326.9' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>Shared</text>
+<path d='M385.0,344.0 V331.1 Q385.0,327.1 389.0,327.1 H415.0 Q419.0,327.1 419.0,331.1 V344.0 Z' fill='#2a78d6'><title>Padded · TFLOP/s: 0.67 TFLOP/s</title></path>
+<text x='402.0' y='323.1' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>0.67</text>
+<text x='402.0' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>Padded</text>
+<path d='M460.1,344.0 V300.7 Q460.1,296.7 464.1,296.7 H490.1 Q494.1,296.7 494.1,300.7 V344.0 Z' fill='#2a78d6'><title>1D tile · TFLOP/s: 1.88 TFLOP/s</title></path>
+<text x='477.1' y='292.7' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>1.88</text>
+<text x='477.1' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>1D tile</text>
+<path d='M535.2,344.0 V250.2 Q535.2,246.2 539.2,246.2 H565.2 Q569.2,246.2 569.2,250.2 V344.0 Z' fill='#2a78d6'><title>2D tile · TFLOP/s: 3.88 TFLOP/s</title></path>
+<text x='552.2' y='242.2' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>3.88</text>
+<text x='552.2' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>2D tile</text>
+<path d='M610.3,344.0 V207.0 Q610.3,203.0 614.3,203.0 H640.3 Q644.3,203.0 644.3,207.0 V344.0 Z' fill='#2a78d6'><title>Vectorized · TFLOP/s: 5.60 TFLOP/s</title></path>
+<text x='627.3' y='199.0' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>5.60</text>
+<text x='627.3' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>Vectorized</text>
+<path d='M685.4,344.0 V178.6 Q685.4,174.6 689.4,174.6 H715.4 Q719.4,174.6 719.4,178.6 V344.0 Z' fill='#2a78d6'><title>cuBLAS · TFLOP/s: 6.72 TFLOP/s</title></path>
+<text x='702.4' y='170.6' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>6.72</text>
+<text x='702.4' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>cuBLAS</text>
 <line x1='64' x2='740' y1='344.0' y2='344.0' stroke='#8a8984' stroke-width='1'/>
 </svg>

@@ -1,19 +1,19 @@
-[11578] matmul@127.0.0.1
+[11052] matmul@127.0.0.1
   volta_sgemm_128x64_nn (7, 16, 1)x(128, 1, 1), Context 1, Stream 7, Device 0, CC 7.5
     Section: GPU Speed Of Light Throughput
     ----------------------- ----------- ------------
     Metric Name             Metric Unit Metric Value
     ----------------------- ----------- ------------
-    DRAM Frequency                  Ghz         4.99
-    SM Frequency                    Mhz       584.97
-    Elapsed Cycles                cycle      217,968
+    DRAM Frequency                  Ghz         5.00
+    SM Frequency                    Mhz       584.94
+    Elapsed Cycles                cycle      217,903
     Memory Throughput                 %        39.76
-    DRAM Throughput                   %         8.49
-    Duration                         us       372.61
+    DRAM Throughput                   %         8.48
+    Duration                         us       372.51
     L1/TEX Cache Throughput           %        72.66
-    L2 Cache Throughput               %        16.08
-    SM Active Cycles              cycle   201,649.20
-    Compute (SM) Throughput           %        85.62
+    L2 Cache Throughput               %        16.10
+    SM Active Cycles              cycle   201,663.67
+    Compute (SM) Throughput           %        85.63
     ----------------------- ----------- ------------
 
     INF   This workload is utilizing greater than 80.0% of the available compute or memory performance of the device.   
@@ -43,7 +43,7 @@
     Executed Ipc Elapsed  inst/cycle         2.02
     Issue Slots Busy               %        50.59
     Issued Ipc Active     inst/cycle         2.19
-    SM Busy                        %        85.62
+    SM Busy                        %        85.63
     -------------------- ----------- ------------
 
     OPT   FMA is the highest-utilized pipeline (85.6%) based on elapsed cycles in the workload, taking into account the 
@@ -63,11 +63,11 @@
     -------------------------------------- ----------- ------------
     Local Memory Spilling Requests                                0
     Local Memory Spilling Request Overhead           %            0
-    Memory Throughput                          Gbyte/s        27.14
+    Memory Throughput                          Gbyte/s        27.12
     Mem Busy                                         %        36.33
     Max Bandwidth                                    %        39.76
-    L1/TEX Hit Rate                                  %        18.94
-    L2 Hit Rate                                      %        94.30
+    L1/TEX Hit Rate                                  %        18.85
+    L2 Hit Rate                                      %        94.09
     Mem Pipes Busy                                   %        39.76
     -------------------------------------- ----------- ------------
 
@@ -86,18 +86,18 @@
     ---------------------------- ----------- ------------
     Metric Name                  Metric Unit Metric Value
     ---------------------------- ----------- ------------
-    One or More Eligible                   %        54.75
+    One or More Eligible                   %        54.70
     Issued Warp Per Scheduler                        0.55
-    No Eligible                            %        45.25
-    Active Warps Per Scheduler          warp         2.32
+    No Eligible                            %        45.30
+    Active Warps Per Scheduler          warp         2.31
     Eligible Warps Per Scheduler        warp         1.09
     ---------------------------- ----------- ------------
 
-    OPT   Est. Local Speedup: 14.38%                                                                                    
+    OPT   Est. Local Speedup: 14.37%                                                                                    
           Every scheduler is capable of issuing one instruction per cycle, but for this workload each scheduler only    
           issues an instruction every 1.8 cycles. This might leave hardware resources underutilized and may lead to     
           less optimal performance. Out of the maximum of 8 warps per scheduler, this workload allocates an average of  
-          2.32 active warps per scheduler, but only an average of 1.09 warps were eligible per cycle. Eligible warps    
+          2.31 active warps per scheduler, but only an average of 1.09 warps were eligible per cycle. Eligible warps    
           are the subset of active warps that are ready to issue their next instruction. Every cycle with no eligible   
           warp results in no instruction being issued and the issue slot remains unused. To increase the number of      
           eligible warps, reduce the time the active warps are stalled by inspecting the top stall reasons on the Warp  
@@ -154,18 +154,18 @@
     Block Limit Warps                     block            8
     Theoretical Active Warps per SM        warp           16
     Theoretical Occupancy                     %           50
-    Achieved Occupancy                        %        28.95
+    Achieved Occupancy                        %        28.93
     Achieved Active Warps Per SM           warp         9.26
     ------------------------------- ----------- ------------
 
-    OPT   Est. Speedup: 14.38%                                                                                          
+    OPT   Est. Speedup: 14.37%                                                                                          
           The difference between calculated theoretical (50.0%) and measured achieved occupancy (28.9%) can be the      
           result of warp scheduling overheads or workload imbalances during the kernel execution. Load imbalances can   
           occur between warps within a block as well as across blocks of the same kernel. See the CUDA Best Practices   
           Guide (https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#occupancy) for more details on     
           optimizing occupancy.                                                                                         
     ----- --------------------------------------------------------------------------------------------------------------
-    OPT   Est. Speedup: 14.38%                                                                                          
+    OPT   Est. Speedup: 14.37%                                                                                          
           The 4.00 theoretical warps per scheduler this kernel can issue according to its occupancy are below the       
           hardware maximum of 8. This kernel's theoretical occupancy (50.0%) is limited by the number of required       
           registers.                                                                                                    
@@ -174,29 +174,29 @@
     -------------------------- ----------- ------------
     Metric Name                Metric Unit Metric Value
     -------------------------- ----------- ------------
-    Average DRAM Active Cycles       cycle      157,988
-    Total DRAM Elapsed Cycles        cycle   14,884,864
-    Average L1 Active Cycles         cycle   201,649.20
-    Total L1 Elapsed Cycles          cycle    8,725,720
-    Average L2 Active Cycles         cycle   289,735.75
-    Total L2 Elapsed Cycles          cycle   10,190,464
-    Average SM Active Cycles         cycle   201,649.20
-    Total SM Elapsed Cycles          cycle    8,725,720
-    Average SMSP Active Cycles       cycle   201,570.23
-    Total SMSP Elapsed Cycles        cycle   34,902,880
+    Average DRAM Active Cycles       cycle      157,874
+    Total DRAM Elapsed Cycles        cycle   14,900,224
+    Average L1 Active Cycles         cycle   201,663.67
+    Total L1 Elapsed Cycles          cycle    8,725,432
+    Average L2 Active Cycles         cycle   288,614.47
+    Total L2 Elapsed Cycles          cycle   10,190,048
+    Average SM Active Cycles         cycle   201,663.67
+    Total SM Elapsed Cycles          cycle    8,725,432
+    Average SMSP Active Cycles       cycle   201,753.48
+    Total SMSP Elapsed Cycles        cycle   34,901,728
     -------------------------- ----------- ------------
 
-    OPT   Est. Speedup: 6.372%                                                                                          
+    OPT   Est. Speedup: 6.495%                                                                                          
           One or more SMs have a much lower number of active cycles than the average number of active cycles. Maximum   
-          instance value is 6.89% above the average, while the minimum instance value is 27.99% below the average.      
+          instance value is 7.03% above the average, while the minimum instance value is 28.14% below the average.      
     ----- --------------------------------------------------------------------------------------------------------------
-    OPT   Est. Speedup: 6.381%                                                                                          
+    OPT   Est. Speedup: 6.553%                                                                                          
           One or more SMSPs have a much lower number of active cycles than the average number of active cycles. Maximum 
-          instance value is 6.91% above the average, while the minimum instance value is 27.99% below the average.      
+          instance value is 7.08% above the average, while the minimum instance value is 28.00% below the average.      
     ----- --------------------------------------------------------------------------------------------------------------
-    OPT   Est. Speedup: 6.372%                                                                                          
+    OPT   Est. Speedup: 6.495%                                                                                          
           One or more L1 Slices have a much lower number of active cycles than the average number of active cycles.     
-          Maximum instance value is 6.89% above the average, while the minimum instance value is 27.99% below the       
+          Maximum instance value is 7.03% above the average, while the minimum instance value is 28.14% below the       
           average.                                                                                                      
 
     Section: Source Counters
@@ -209,14 +209,14 @@
     Avg. Divergent Branches      branches            0
     ------------------------- ----------- ------------
 
-    OPT   Est. Speedup: 27.78%                                                                                          
+    OPT   Est. Speedup: 27.67%                                                                                          
           This kernel has uncoalesced global accesses resulting in a total of 590282 excessive sectors (31% of the      
           total 1933208 sectors). Check the L2 Theoretical Sectors Global Excessive table for the primary source        
           locations. The CUDA Programming Guide                                                                         
           (https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#device-memory-accesses) has additional      
           information on reducing uncoalesced device memory accesses.                                                   
     ----- --------------------------------------------------------------------------------------------------------------
-    OPT   Est. Speedup: 1.145%                                                                                          
+    OPT   Est. Speedup: 1.146%                                                                                          
           This kernel has uncoalesced shared accesses resulting in a total of 28672 excessive wavefronts (1% of the     
           total 2313920 wavefronts). Check the L1 Wavefronts Shared Excessive table for the primary source locations.   
           The CUDA Best Practices Guide                                                                                 

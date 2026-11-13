@@ -25,71 +25,71 @@
 <line x1='64' x2='740' y1='92.0' y2='92.0' stroke='#e6e5e1' stroke-width='1'/>
 <text x='56.0' y='96.0' font-family='Helvetica, Arial, sans-serif' font-size='10' fill='#8a8984' text-anchor='end' font-weight='400'>10000</text>
 <text x='16.0' y='218.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400' transform='rotate(-90 16 218.0)'>GFLOP/s</text>
-<path d='M77.0,344.0 V321.9 Q77.0,317.9 81.0,317.9 H88.7 Q92.7,317.9 92.7,321.9 V344.0 Z' fill='#2a78d6'><title>1023×1023×1023 · tiled (T=32): 1034 GFLOP/s</title></path>
-<text x='84.9' y='313.9' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>1034</text>
-<path d='M94.7,344.0 V262.3 Q94.7,258.3 98.7,258.3 H106.5 Q110.5,258.3 110.5,262.3 V344.0 Z' fill='#eb6834'><title>1023×1023×1023 · regtile: 3402 GFLOP/s</title></path>
-<text x='102.6' y='254.3' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>3402</text>
-<path d='M112.5,344.0 V274.7 Q112.5,270.7 116.5,270.7 H124.2 Q128.2,270.7 128.2,274.7 V344.0 Z' fill='#1baf7a'><title>1023×1023×1023 · vec (64×64, 4×4): 2908 GFLOP/s</title></path>
-<text x='120.3' y='266.7' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>2908</text>
-<path d='M130.2,344.0 V265.0 Q130.2,261.0 134.2,261.0 H141.9 Q145.9,261.0 145.9,265.0 V344.0 Z' fill='#eda100'><title>1023×1023×1023 · vec128 (128×128, 8×8): 3293 GFLOP/s</title></path>
-<text x='138.1' y='257.0' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>3293</text>
-<path d='M147.9,344.0 V231.7 Q147.9,227.7 151.9,227.7 H159.7 Q163.7,227.7 163.7,231.7 V344.0 Z' fill='#e87ba4'><title>1023×1023×1023 · cuBLAS (reference): 4617 GFLOP/s</title></path>
-<text x='155.8' y='223.7' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>4617</text>
+<path d='M77.0,344.0 V321.8 Q77.0,317.8 81.0,317.8 H88.7 Q92.7,317.8 92.7,321.8 V344.0 Z' fill='#2a78d6'><title>1023×1023×1023 · tiled (T=32): 1039 GFLOP/s</title></path>
+<text x='84.9' y='313.8' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>1039</text>
+<path d='M94.7,344.0 V280.9 Q94.7,276.9 98.7,276.9 H106.5 Q110.5,276.9 110.5,280.9 V344.0 Z' fill='#eb6834'><title>1023×1023×1023 · regtile: 2663 GFLOP/s</title></path>
+<text x='102.6' y='272.9' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>2663</text>
+<path d='M112.5,344.0 V295.1 Q112.5,291.1 116.5,291.1 H124.2 Q128.2,291.1 128.2,295.1 V344.0 Z' fill='#1baf7a'><title>1023×1023×1023 · vec (64×64, 4×4): 2098 GFLOP/s</title></path>
+<text x='120.3' y='287.1' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>2098</text>
+<path d='M130.2,344.0 V275.3 Q130.2,271.3 134.2,271.3 H141.9 Q145.9,271.3 145.9,275.3 V344.0 Z' fill='#eda100'><title>1023×1023×1023 · vec128 (128×128, 8×8): 2885 GFLOP/s</title></path>
+<text x='138.1' y='267.3' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>2885</text>
+<path d='M147.9,344.0 V241.8 Q147.9,237.8 151.9,237.8 H159.7 Q163.7,237.8 163.7,241.8 V344.0 Z' fill='#e87ba4'><title>1023×1023×1023 · cuBLAS (reference): 4214 GFLOP/s</title></path>
+<text x='155.8' y='233.8' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>4214</text>
 <text x='120.3' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>1023×1023×1023</text>
 <path d='M189.7,344.0 V322.0 Q189.7,318.0 193.7,318.0 H201.4 Q205.4,318.0 205.4,322.0 V344.0 Z' fill='#2a78d6'><title>1024×1024×1024 · tiled (T=32): 1033 GFLOP/s</title></path>
 <text x='197.5' y='314.0' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>1033</text>
-<path d='M207.4,344.0 V258.7 Q207.4,254.7 211.4,254.7 H219.1 Q223.1,254.7 223.1,258.7 V344.0 Z' fill='#eb6834'><title>1024×1024×1024 · regtile: 3542 GFLOP/s</title></path>
-<text x='215.3' y='250.7' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>3542</text>
-<path d='M225.1,344.0 V258.8 Q225.1,254.8 229.1,254.8 H236.9 Q240.9,254.8 240.9,258.8 V344.0 Z' fill='#1baf7a'><title>1024×1024×1024 · vec (64×64, 4×4): 3541 GFLOP/s</title></path>
-<text x='233.0' y='250.8' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>3541</text>
-<path d='M242.9,344.0 V230.0 Q242.9,226.0 246.9,226.0 H254.6 Q258.6,226.0 258.6,230.0 V344.0 Z' fill='#eda100'><title>1024×1024×1024 · vec128 (128×128, 8×8): 4681 GFLOP/s</title></path>
-<text x='250.7' y='222.0' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>4681</text>
-<path d='M260.6,344.0 V216.4 Q260.6,212.4 264.6,212.4 H272.3 Q276.3,212.4 276.3,216.4 V344.0 Z' fill='#e87ba4'><title>1024×1024×1024 · cuBLAS (reference): 5223 GFLOP/s</title></path>
-<text x='268.5' y='208.4' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>5223</text>
+<path d='M207.4,344.0 V258.4 Q207.4,254.4 211.4,254.4 H219.1 Q223.1,254.4 223.1,258.4 V344.0 Z' fill='#eb6834'><title>1024×1024×1024 · regtile: 3554 GFLOP/s</title></path>
+<text x='215.3' y='250.4' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>3554</text>
+<path d='M225.1,344.0 V258.8 Q225.1,254.8 229.1,254.8 H236.9 Q240.9,254.8 240.9,258.8 V344.0 Z' fill='#1baf7a'><title>1024×1024×1024 · vec (64×64, 4×4): 3540 GFLOP/s</title></path>
+<text x='233.0' y='250.8' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>3540</text>
+<path d='M242.9,344.0 V261.0 Q242.9,257.0 246.9,257.0 H254.6 Q258.6,257.0 258.6,261.0 V344.0 Z' fill='#eda100'><title>1024×1024×1024 · vec128 (128×128, 8×8): 3453 GFLOP/s</title></path>
+<text x='250.7' y='253.0' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>3453</text>
+<path d='M260.6,344.0 V225.7 Q260.6,221.7 264.6,221.7 H272.3 Q276.3,221.7 276.3,225.7 V344.0 Z' fill='#e87ba4'><title>1024×1024×1024 · cuBLAS (reference): 4853 GFLOP/s</title></path>
+<text x='268.5' y='217.7' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>4853</text>
 <text x='233.0' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>1024×1024×1024</text>
-<path d='M302.3,344.0 V326.7 Q302.3,322.7 306.3,322.7 H314.1 Q318.1,322.7 318.1,326.7 V344.0 Z' fill='#2a78d6'><title>1025×1025×1025 · tiled (T=32): 847 GFLOP/s</title></path>
-<text x='310.2' y='318.7' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>847</text>
-<path d='M320.1,344.0 V269.3 Q320.1,265.3 324.1,265.3 H331.8 Q335.8,265.3 335.8,269.3 V344.0 Z' fill='#eb6834'><title>1025×1025×1025 · regtile: 3123 GFLOP/s</title></path>
-<text x='327.9' y='261.3' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>3123</text>
-<path d='M337.8,344.0 V279.8 Q337.8,275.8 341.8,275.8 H349.5 Q353.5,275.8 353.5,279.8 V344.0 Z' fill='#1baf7a'><title>1025×1025×1025 · vec (64×64, 4×4): 2706 GFLOP/s</title></path>
-<text x='345.7' y='271.8' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>2706</text>
-<path d='M355.5,344.0 V272.3 Q355.5,268.3 359.5,268.3 H367.3 Q371.3,268.3 371.3,272.3 V344.0 Z' fill='#eda100'><title>1025×1025×1025 · vec128 (128×128, 8×8): 3004 GFLOP/s</title></path>
-<text x='363.4' y='264.3' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>3004</text>
-<path d='M373.3,344.0 V213.4 Q373.3,209.4 377.3,209.4 H385.0 Q389.0,209.4 389.0,213.4 V344.0 Z' fill='#e87ba4'><title>1025×1025×1025 · cuBLAS (reference): 5341 GFLOP/s</title></path>
-<text x='381.1' y='205.4' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>5341</text>
+<path d='M302.3,344.0 V326.7 Q302.3,322.7 306.3,322.7 H314.1 Q318.1,322.7 318.1,326.7 V344.0 Z' fill='#2a78d6'><title>1025×1025×1025 · tiled (T=32): 844 GFLOP/s</title></path>
+<text x='310.2' y='318.7' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>844</text>
+<path d='M320.1,344.0 V268.5 Q320.1,264.5 324.1,264.5 H331.8 Q335.8,264.5 335.8,268.5 V344.0 Z' fill='#eb6834'><title>1025×1025×1025 · regtile: 3156 GFLOP/s</title></path>
+<text x='327.9' y='260.5' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>3156</text>
+<path d='M337.8,344.0 V279.8 Q337.8,275.8 341.8,275.8 H349.5 Q353.5,275.8 353.5,279.8 V344.0 Z' fill='#1baf7a'><title>1025×1025×1025 · vec (64×64, 4×4): 2705 GFLOP/s</title></path>
+<text x='345.7' y='271.8' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>2705</text>
+<path d='M355.5,344.0 V287.9 Q355.5,283.9 359.5,283.9 H367.3 Q371.3,283.9 371.3,287.9 V344.0 Z' fill='#eda100'><title>1025×1025×1025 · vec128 (128×128, 8×8): 2386 GFLOP/s</title></path>
+<text x='363.4' y='279.9' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>2386</text>
+<path d='M373.3,344.0 V244.9 Q373.3,240.9 377.3,240.9 H385.0 Q389.0,240.9 389.0,244.9 V344.0 Z' fill='#e87ba4'><title>1025×1025×1025 · cuBLAS (reference): 4093 GFLOP/s</title></path>
+<text x='381.1' y='236.9' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>4093</text>
 <text x='345.7' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>1025×1025×1025</text>
-<path d='M415.0,344.0 V329.7 Q415.0,325.7 419.0,325.7 H426.7 Q430.7,325.7 430.7,329.7 V344.0 Z' fill='#2a78d6'><title>4095×4095×4095 · tiled (T=32): 724 GFLOP/s</title></path>
-<text x='422.9' y='321.7' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>724</text>
-<path d='M432.7,344.0 V279.8 Q432.7,275.8 436.7,275.8 H444.5 Q448.5,275.8 448.5,279.8 V344.0 Z' fill='#eb6834'><title>4095×4095×4095 · regtile: 2707 GFLOP/s</title></path>
-<text x='440.6' y='271.8' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>2707</text>
-<path d='M450.5,344.0 V289.7 Q450.5,285.7 454.5,285.7 H462.2 Q466.2,285.7 466.2,289.7 V344.0 Z' fill='#1baf7a'><title>4095×4095×4095 · vec (64×64, 4×4): 2314 GFLOP/s</title></path>
-<text x='458.3' y='281.7' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>2314</text>
-<path d='M468.2,344.0 V232.2 Q468.2,228.2 472.2,228.2 H479.9 Q483.9,228.2 483.9,232.2 V344.0 Z' fill='#eda100'><title>4095×4095×4095 · vec128 (128×128, 8×8): 4595 GFLOP/s</title></path>
-<text x='476.1' y='224.2' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>4595</text>
-<path d='M485.9,344.0 V186.9 Q485.9,182.9 489.9,182.9 H497.7 Q501.7,182.9 501.7,186.9 V344.0 Z' fill='#e87ba4'><title>4095×4095×4095 · cuBLAS (reference): 6391 GFLOP/s</title></path>
-<text x='493.8' y='178.9' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>6391</text>
-<text x='458.3' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>4095×4095×4095</text>
-<path d='M527.7,344.0 V328.3 Q527.7,324.3 531.7,324.3 H539.4 Q543.4,324.3 543.4,328.3 V344.0 Z' fill='#2a78d6'><title>4096×4096×4096 · tiled (T=32): 781 GFLOP/s</title></path>
-<text x='535.5' y='320.3' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>781</text>
-<path d='M545.4,344.0 V275.1 Q545.4,271.1 549.4,271.1 H557.1 Q561.1,271.1 561.1,275.1 V344.0 Z' fill='#eb6834'><title>4096×4096×4096 · regtile: 2893 GFLOP/s</title></path>
-<text x='553.3' y='267.1' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>2893</text>
-<path d='M563.1,344.0 V269.7 Q563.1,265.7 567.1,265.7 H574.9 Q578.9,265.7 578.9,269.7 V344.0 Z' fill='#1baf7a'><title>4096×4096×4096 · vec (64×64, 4×4): 3106 GFLOP/s</title></path>
-<text x='571.0' y='261.7' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>3106</text>
-<path d='M580.9,344.0 V207.8 Q580.9,203.8 584.9,203.8 H592.6 Q596.6,203.8 596.6,207.8 V344.0 Z' fill='#eda100'><title>4096×4096×4096 · vec128 (128×128, 8×8): 5562 GFLOP/s</title></path>
-<text x='588.7' y='199.8' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>5562</text>
-<path d='M598.6,344.0 V183.4 Q598.6,179.4 602.6,179.4 H610.3 Q614.3,179.4 614.3,183.4 V344.0 Z' fill='#e87ba4'><title>4096×4096×4096 · cuBLAS (reference): 6532 GFLOP/s</title></path>
-<text x='606.5' y='175.4' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>6532</text>
-<text x='571.0' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>4096×4096×4096</text>
-<path d='M640.3,344.0 V329.6 Q640.3,325.6 644.3,325.6 H652.1 Q656.1,325.6 656.1,329.6 V344.0 Z' fill='#2a78d6'><title>4097×4097×4097 · tiled (T=32): 730 GFLOP/s</title></path>
-<text x='648.2' y='321.6' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>730</text>
-<path d='M658.1,344.0 V281.0 Q658.1,277.0 662.1,277.0 H669.8 Q673.8,277.0 673.8,281.0 V344.0 Z' fill='#eb6834'><title>4097×4097×4097 · regtile: 2659 GFLOP/s</title></path>
-<text x='665.9' y='273.0' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>2659</text>
-<path d='M675.8,344.0 V294.3 Q675.8,290.3 679.8,290.3 H687.5 Q691.5,290.3 691.5,294.3 V344.0 Z' fill='#1baf7a'><title>4097×4097×4097 · vec (64×64, 4×4): 2132 GFLOP/s</title></path>
-<text x='683.7' y='286.3' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>2132</text>
-<path d='M693.5,344.0 V237.4 Q693.5,233.4 697.5,233.4 H705.3 Q709.3,233.4 709.3,237.4 V344.0 Z' fill='#eda100'><title>4097×4097×4097 · vec128 (128×128, 8×8): 4388 GFLOP/s</title></path>
-<text x='701.4' y='229.4' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>4388</text>
-<path d='M711.3,344.0 V203.6 Q711.3,199.6 715.3,199.6 H723.0 Q727.0,199.6 727.0,203.6 V344.0 Z' fill='#e87ba4'><title>4097×4097×4097 · cuBLAS (reference): 5732 GFLOP/s</title></path>
-<text x='719.1' y='195.6' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>5732</text>
-<text x='683.7' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>4097×4097×4097</text>
+<path d='M415.0,344.0 V324.3 Q415.0,320.3 419.0,320.3 H426.7 Q430.7,320.3 430.7,324.3 V344.0 Z' fill='#2a78d6'><title>2047×2047×2047 · tiled (T=32): 941 GFLOP/s</title></path>
+<text x='422.9' y='316.3' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>941</text>
+<path d='M432.7,344.0 V253.6 Q432.7,249.6 436.7,249.6 H444.5 Q448.5,249.6 448.5,253.6 V344.0 Z' fill='#eb6834'><title>2047×2047×2047 · regtile: 3745 GFLOP/s</title></path>
+<text x='440.6' y='245.6' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>3745</text>
+<path d='M450.5,344.0 V269.2 Q450.5,265.2 454.5,265.2 H462.2 Q466.2,265.2 466.2,269.2 V344.0 Z' fill='#1baf7a'><title>2047×2047×2047 · vec (64×64, 4×4): 3126 GFLOP/s</title></path>
+<text x='458.3' y='261.2' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>3126</text>
+<path d='M468.2,344.0 V221.7 Q468.2,217.7 472.2,217.7 H479.9 Q483.9,217.7 483.9,221.7 V344.0 Z' fill='#eda100'><title>2047×2047×2047 · vec128 (128×128, 8×8): 5011 GFLOP/s</title></path>
+<text x='476.1' y='213.7' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>5011</text>
+<path d='M485.9,344.0 V170.9 Q485.9,166.9 489.9,166.9 H497.7 Q501.7,166.9 501.7,170.9 V344.0 Z' fill='#e87ba4'><title>2047×2047×2047 · cuBLAS (reference): 7026 GFLOP/s</title></path>
+<text x='493.8' y='162.9' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>7026</text>
+<text x='458.3' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>2047×2047×2047</text>
+<path d='M527.7,344.0 V323.9 Q527.7,319.9 531.7,319.9 H539.4 Q543.4,319.9 543.4,323.9 V344.0 Z' fill='#2a78d6'><title>2048×2048×2048 · tiled (T=32): 957 GFLOP/s</title></path>
+<text x='535.5' y='315.9' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>957</text>
+<path d='M545.4,344.0 V251.5 Q545.4,247.5 549.4,247.5 H557.1 Q561.1,247.5 561.1,251.5 V344.0 Z' fill='#eb6834'><title>2048×2048×2048 · regtile: 3830 GFLOP/s</title></path>
+<text x='553.3' y='243.5' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>3830</text>
+<path d='M563.1,344.0 V250.5 Q563.1,246.5 567.1,246.5 H574.9 Q578.9,246.5 578.9,250.5 V344.0 Z' fill='#1baf7a'><title>2048×2048×2048 · vec (64×64, 4×4): 3868 GFLOP/s</title></path>
+<text x='571.0' y='242.5' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>3868</text>
+<path d='M580.9,344.0 V207.2 Q580.9,203.2 584.9,203.2 H592.6 Q596.6,203.2 596.6,207.2 V344.0 Z' fill='#eda100'><title>2048×2048×2048 · vec128 (128×128, 8×8): 5586 GFLOP/s</title></path>
+<text x='588.7' y='199.2' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>5586</text>
+<path d='M598.6,344.0 V167.9 Q598.6,163.9 602.6,163.9 H610.3 Q614.3,163.9 614.3,167.9 V344.0 Z' fill='#e87ba4'><title>2048×2048×2048 · cuBLAS (reference): 7147 GFLOP/s</title></path>
+<text x='606.5' y='159.9' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>7147</text>
+<text x='571.0' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>2048×2048×2048</text>
+<path d='M640.3,344.0 V325.3 Q640.3,321.3 644.3,321.3 H652.1 Q656.1,321.3 656.1,325.3 V344.0 Z' fill='#2a78d6'><title>2049×2049×2049 · tiled (T=32): 901 GFLOP/s</title></path>
+<text x='648.2' y='317.3' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>901</text>
+<path d='M658.1,344.0 V258.4 Q658.1,254.4 662.1,254.4 H669.8 Q673.8,254.4 673.8,258.4 V344.0 Z' fill='#eb6834'><title>2049×2049×2049 · regtile: 3554 GFLOP/s</title></path>
+<text x='665.9' y='250.4' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>3554</text>
+<path d='M675.8,344.0 V272.2 Q675.8,268.2 679.8,268.2 H687.5 Q691.5,268.2 691.5,272.2 V344.0 Z' fill='#1baf7a'><title>2049×2049×2049 · vec (64×64, 4×4): 3007 GFLOP/s</title></path>
+<text x='683.7' y='264.2' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>3007</text>
+<path d='M693.5,344.0 V235.5 Q693.5,231.5 697.5,231.5 H705.3 Q709.3,231.5 709.3,235.5 V344.0 Z' fill='#eda100'><title>2049×2049×2049 · vec128 (128×128, 8×8): 4466 GFLOP/s</title></path>
+<text x='701.4' y='227.5' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>4466</text>
+<path d='M711.3,344.0 V186.2 Q711.3,182.2 715.3,182.2 H723.0 Q727.0,182.2 727.0,186.2 V344.0 Z' fill='#e87ba4'><title>2049×2049×2049 · cuBLAS (reference): 6419 GFLOP/s</title></path>
+<text x='719.1' y='178.2' font-family='Helvetica, Arial, sans-serif' font-size='9' fill='#52514e' text-anchor='middle' font-weight='400'>6419</text>
+<text x='683.7' y='362.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='middle' font-weight='400'>2049×2049×2049</text>
 <line x1='64' x2='740' y1='344.0' y2='344.0' stroke='#8a8984' stroke-width='1'/>
 </svg>

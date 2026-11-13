@@ -17,7 +17,8 @@ import sys
 
 FP32_CORES_PER_SM = {(6, 0): 64, (6, 1): 128, (7, 0): 64, (7, 2): 64, (7, 5): 64, (8, 0): 64,
                      (8, 6): 128, (8, 7): 128, (8, 9): 128, (9, 0): 128, (10, 0): 128, (12, 0): 128}
-ARCH = {6: "Pascal", 7: "Volta/Turing", 8: "Ampere/Ada", 9: "Hopper", 10: "Blackwell", 12: "Blackwell"}
+ARCH = {6: "Pascal", 7: "Volta", 8: "Ampere", 9: "Hopper", 10: "Blackwell", 12: "Blackwell"}
+ARCH_CC = {(7, 5): "Turing", (8, 9): "Ada Lovelace"}
 
 
 def run(cmd):
@@ -49,7 +50,7 @@ def main():
     kib = lambda b: f"{b / 1024:.0f} KiB"
     rows = [
         ("GPU", dev["name"]),
-        ("Architecture / compute capability", f"{ARCH.get(cc[0], '?')}, sm_{cc[0]}{cc[1]}"),
+        ("Architecture / compute capability", f"{ARCH_CC.get(cc, ARCH.get(cc[0], '?'))}, sm_{cc[0]}{cc[1]}"),
         ("Streaming multiprocessors (SMs)", dev["sm_count"]),
         ("FP32 cores per SM / total", f"{cores} / {cores * dev['sm_count']}" if cores else "unknown"),
         ("Max SM clock (boost)", f"{sm_mhz:.0f} MHz"),

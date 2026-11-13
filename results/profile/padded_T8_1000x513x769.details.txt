@@ -1,19 +1,19 @@
-[9566] matmul@127.0.0.1
+[9164] matmul@127.0.0.1
   void matmul_tiled<8, 1, 0>(const float *, const float *, float *, int, int, int) (97, 125, 1)x(8, 8, 1), Context 1, Stream 7, Device 0, CC 7.5
     Section: GPU Speed Of Light Throughput
     ----------------------- ----------- ------------
     Metric Name             Metric Unit Metric Value
     ----------------------- ----------- ------------
-    DRAM Frequency                  Ghz         4.99
+    DRAM Frequency                  Ghz         5.00
     SM Frequency                    Mhz       584.99
-    Elapsed Cycles                cycle    2,529,404
-    Memory Throughput                 %        62.58
+    Elapsed Cycles                cycle    2,530,227
+    Memory Throughput                 %        62.44
     DRAM Throughput                   %         1.21
-    Duration                         ms         4.32
-    L1/TEX Cache Throughput           %        98.88
-    L2 Cache Throughput               %        12.25
-    SM Active Cycles              cycle 2,518,279.77
-    Compute (SM) Throughput           %        62.58
+    Duration                         ms         4.33
+    L1/TEX Cache Throughput           %        98.66
+    L2 Cache Throughput               %        11.94
+    SM Active Cycles              cycle 2,518,563.75
+    Compute (SM) Throughput           %        62.44
     ----------------------- ----------- ------------
 
     INF   Compute and Memory are well-balanced: To reduce runtime, both computation and memory traffic must be reduced. 
@@ -39,13 +39,13 @@
     Metric Name          Metric Unit Metric Value
     -------------------- ----------- ------------
     Executed Ipc Active   inst/cycle         0.78
-    Executed Ipc Elapsed  inst/cycle         0.78
-    Issue Slots Busy               %        19.39
+    Executed Ipc Elapsed  inst/cycle         0.77
+    Issue Slots Busy               %        19.34
     Issued Ipc Active     inst/cycle         0.78
-    SM Busy                        %        22.97
+    SM Busy                        %        22.92
     -------------------- ----------- ------------
 
-    OPT   Est. Local Speedup: 88.54%                                                                                    
+    OPT   Est. Local Speedup: 88.57%                                                                                    
           All compute pipelines are under-utilized. Either this workload is very small or it doesn't issue enough warps 
           per scheduler. Check the Launch Statistics and Scheduler Statistics sections for further details.             
 
@@ -55,26 +55,26 @@
     -------------------------------------- ----------- ------------
     Local Memory Spilling Requests                                0
     Local Memory Spilling Request Overhead           %            0
-    Memory Throughput                          Gbyte/s         3.88
-    Mem Busy                                         %        49.44
-    Max Bandwidth                                    %        62.58
-    L1/TEX Hit Rate                                  %        40.31
-    L2 Hit Rate                                      %        99.18
-    Mem Pipes Busy                                   %        62.58
+    Memory Throughput                          Gbyte/s         3.86
+    Mem Busy                                         %        49.33
+    Max Bandwidth                                    %        62.44
+    L1/TEX Hit Rate                                  %        38.98
+    L2 Hit Rate                                      %       101.38
+    Mem Pipes Busy                                   %        62.44
     -------------------------------------- ----------- ------------
 
     Section: Memory Workload Analysis Tables
-    OPT   Est. Speedup: 50.14%                                                                                          
+    OPT   Est. Speedup: 50.03%                                                                                          
           The memory access pattern for global loads from L1TEX might not be optimal. On average, only 15.8 of the 32   
           bytes transmitted per sector are utilized by each thread. This could possibly be caused by a stride between   
           threads. Check the Source Counters section for uncoalesced global loads.                                      
     ----- --------------------------------------------------------------------------------------------------------------
-    OPT   Est. Speedup: 46.37%                                                                                          
+    OPT   Est. Speedup: 46.26%                                                                                          
           The memory access pattern for global stores to L1TEX might not be optimal. On average, only 17.0 of the 32    
           bytes transmitted per sector are utilized by each thread. This could possibly be caused by a stride between   
           threads. Check the Source Counters section for uncoalesced global stores.                                     
     ----- --------------------------------------------------------------------------------------------------------------
-    OPT   Est. Speedup: 49.44%                                                                                          
+    OPT   Est. Speedup: 49.33%                                                                                          
           The memory access pattern for shared stores might not be optimal and causes on average a 2.0 - way bank       
           conflict across all 3152500 shared store requests.This results in 3152500 bank conflicts,  which represent    
           50.00% of the overall 6305000 wavefronts for shared stores. Check the Source Counters section for             
@@ -84,14 +84,14 @@
     ---------------------------- ----------- ------------
     Metric Name                  Metric Unit Metric Value
     ---------------------------- ----------- ------------
-    One or More Eligible                   %        19.44
+    One or More Eligible                   %        19.45
     Issued Warp Per Scheduler                        0.19
-    No Eligible                            %        80.56
+    No Eligible                            %        80.55
     Active Warps Per Scheduler          warp         7.85
     Eligible Warps Per Scheduler        warp         0.66
     ---------------------------- ----------- ------------
 
-    OPT   Est. Local Speedup: 37.42%                                                                                    
+    OPT   Est. Local Speedup: 37.56%                                                                                    
           Every scheduler is capable of issuing one instruction per cycle, but for this workload each scheduler only    
           issues an instruction every 5.1 cycles. This might leave hardware resources underutilized and may lead to     
           less optimal performance. Out of the maximum of 8 warps per scheduler, this workload allocates an average of  
@@ -105,18 +105,18 @@
     ---------------------------------------- ----------- ------------
     Metric Name                              Metric Unit Metric Value
     ---------------------------------------- ----------- ------------
-    Warp Cycles Per Issued Instruction             cycle        40.36
+    Warp Cycles Per Issued Instruction             cycle        40.35
     Warp Cycles Per Executed Instruction           cycle        40.36
     Avg. Active Threads Per Warp                                32.00
     Avg. Not Predicated Off Threads Per Warp                    31.77
     ---------------------------------------- ----------- ------------
 
-    OPT   Est. Speedup: 37.42%                                                                                          
-          On average, each warp of this workload spends 24.9 cycles being stalled waiting for the MIO (memory           
+    OPT   Est. Speedup: 37.56%                                                                                          
+          On average, each warp of this workload spends 24.5 cycles being stalled waiting for the MIO (memory           
           input/output) instruction queue to be not full. This stall reason is high in cases of extreme utilization of  
           the MIO pipelines, which include special math instructions, dynamic branches, as well as shared memory        
           instructions. When caused by shared memory accesses, trying to use fewer but wider loads can reduce pipeline  
-          pressure. This stall type represents about 61.7% of the total average of 40.4 cycles between issuing two      
+          pressure. This stall type represents about 60.8% of the total average of 40.4 cycles between issuing two      
           instructions.                                                                                                 
     ----- --------------------------------------------------------------------------------------------------------------
     INF   Check the Warp Stall Sampling (All Samples) table for the top stall locations in your source based on         
@@ -130,8 +130,8 @@
     ---------------------------------------- ----------- ------------
     Avg. Executed Instructions Per Scheduler        inst   489,395.31
     Executed Instructions                           inst   78,303,250
-    Avg. Issued Instructions Per Scheduler          inst   489,443.76
-    Issued Instructions                             inst   78,311,002
+    Avg. Issued Instructions Per Scheduler          inst   489,444.06
+    Issued Instructions                             inst   78,311,050
     ---------------------------------------- ----------- ------------
 
     Section: Launch Statistics
@@ -165,24 +165,24 @@
     Block Limit Warps                     block           16
     Theoretical Active Warps per SM        warp           32
     Theoretical Occupancy                     %          100
-    Achieved Occupancy                        %        98.13
-    Achieved Active Warps Per SM           warp        31.40
+    Achieved Occupancy                        %        98.07
+    Achieved Active Warps Per SM           warp        31.38
     ------------------------------- ----------- ------------
 
     Section: GPU and Memory Workload Distribution
     -------------------------- ----------- ------------
     Metric Name                Metric Unit Metric Value
     -------------------------- ----------- ------------
-    Average DRAM Active Cycles       cycle      261,880
-    Total DRAM Elapsed Cycles        cycle  172,691,456
-    Average L1 Active Cycles         cycle 2,518,279.77
-    Total L1 Elapsed Cycles          cycle  100,976,800
-    Average L2 Active Cycles         cycle 3,445,844.12
-    Total L2 Elapsed Cycles          cycle  118,295,424
-    Average SM Active Cycles         cycle 2,518,279.77
-    Total SM Elapsed Cycles          cycle  100,976,800
-    Average SMSP Active Cycles       cycle 2,517,397.61
-    Total SMSP Elapsed Cycles        cycle  403,907,200
+    Average DRAM Active Cycles       cycle      261,064
+    Total DRAM Elapsed Cycles        cycle  172,912,640
+    Average L1 Active Cycles         cycle 2,518,563.75
+    Total L1 Elapsed Cycles          cycle  101,214,792
+    Average L2 Active Cycles         cycle 3,445,416.12
+    Total L2 Elapsed Cycles          cycle  118,336,384
+    Average SM Active Cycles         cycle 2,518,563.75
+    Total SM Elapsed Cycles          cycle  101,214,792
+    Average SMSP Active Cycles       cycle 2,516,855.54
+    Total SMSP Elapsed Cycles        cycle  404,859,168
     -------------------------- ----------- ------------
 
     Section: Source Counters
@@ -195,14 +195,14 @@
     Avg. Divergent Branches      branches            0
     ------------------------- ----------- ------------
 
-    OPT   Est. Speedup: 43.66%                                                                                          
+    OPT   Est. Speedup: 43.64%                                                                                          
           This kernel has uncoalesced global accesses resulting in a total of 11013500 excessive sectors (47% of the    
           total 23514125 sectors). Check the L2 Theoretical Sectors Global Excessive table for the primary source       
           locations. The CUDA Programming Guide                                                                         
           (https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#device-memory-accesses) has additional      
           information on reducing uncoalesced device memory accesses.                                                   
     ----- --------------------------------------------------------------------------------------------------------------
-    OPT   Est. Speedup: 9.976%                                                                                          
+    OPT   Est. Speedup: 9.953%                                                                                          
           This kernel has uncoalesced shared accesses resulting in a total of 3152500 excessive wavefronts (10% of the  
           total 31525000 wavefronts). Check the L1 Wavefronts Shared Excessive table for the primary source locations.  
           The CUDA Best Practices Guide                                                                                 

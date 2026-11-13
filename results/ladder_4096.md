@@ -2,9 +2,12 @@ Kernel-only, median of 20, 4096×4096×4096. Bandwidth = (A + B + C bytes) / tim
 
 | Step | Kernel | Time (ms) | TFLOPS | Bandwidth (GB/s) | vs cuBLAS | Speedup over naive | Speedup over previous step |
 |---|---|---|---|---|---|---|---|
-| – | CPU, i-k-j | 2.585e+04 | 0.00532 | 0.00779 | 0.1% | 0.0× | – |
-| 2 | Global-memory coalesced | 331.4 | 0.415 | 0.607 | 6.3% | 1.0× | – |
-| 3 | Shared memory (T=32) | 168.4 | 0.816 | 1.2 | 12.4% | 2.0× | 1.97× |
-| 4 | Shared + padding (T=32) | 216.6 | 0.634 | 0.929 | 9.6% | 1.5× | – |
-| 7 | Vectorized (float4, 8×8) | 25.47 | 5.4 | 7.9 | 81.8% | 13.0× | 6.61× |
-| – | cuBLAS (reference) | 20.85 | 6.59 | 9.66 | 100.0% | 15.9× | – |
+| 2 | CPU, i-k-j | 2.647e+04 | 0.00519 | 0.00761 | 0.1% | 0.043× | – |
+| 3 | Naive GPU (uncoalesced) | 1143 | 0.12 | 0.176 | 1.8% | 1.0× | – |
+| 4 | Global-memory coalesced | 329.9 | 0.417 | 0.61 | 6.2% | 3.5× | 3.46× |
+| 5 | Shared memory (T=32) | 163.5 | 0.841 | 1.23 | 12.5% | 7.0× | 2.02× |
+| 5b | Shared + padding (T=32) | 204.5 | 0.672 | 0.985 | 10.0% | 5.6× | – |
+| 6 | 1D block tiling (8×1) | 73.15 | 1.88 | 2.75 | 27.9% | 15.6× | 2.24× |
+| 7 | 2D block tiling (8×8) | 35.4 | 3.88 | 5.69 | 57.7% | 32.3× | 2.07× |
+| 8 | Vectorized (float4, 8×8) | 24.56 | 5.6 | 8.2 | 83.2% | 46.5× | 1.44× |
+| – | cuBLAS (reference) | 20.44 | 6.72 | 9.85 | 100.0% | 55.9× | – |

@@ -147,9 +147,11 @@ def ladder_table(t, shape, out_md):
         if not r:
             continue
         ms = r["kernel_ms"]
-        step = "–" if impl.startswith("cpu") or impl == "cublas" else str(i - 1)
+        step = {"cpu_ijk": "2", "cpu": "2", "naive_uncoal": "3", "naive": "4", "tiled": "5", "padded": "5b",
+                "tile1d": "6", "tile2d": "7", "vec128": "8"}.get(impl, "–")
         vs = f"{100 * cub['kernel_ms'] / ms:.1f}%" if cub else "–"
-        sp = f"{base['kernel_ms'] / ms:.1f}×" if base else "–"
+        ratio = base["kernel_ms"] / ms if base else None
+        sp = "–" if ratio is None else (f"{ratio:.3f}×" if ratio < 0.1 else f"{ratio:.1f}×")
         sprev = f"{prev / ms:.2f}×" if prev and not impl.startswith("cpu") and impl != "cublas" and impl != "padded" else "–"
         lines.append(f"| {step} | {name} | {ms:.4g} | {fl / ms / 1e9:.3g} | {by / ms / 1e6:.3g} | {vs} | {sp} | {sprev} |")
         if not impl.startswith("cpu") and impl not in ("cublas", "padded"):
@@ -237,7 +239,9 @@ def roofline(path, hw, prof_rows, bench, shape_m="1024"):
         g = b["kernel_gflops"]
         svg.raw(f"<circle cx='{X(ai):.1f}' cy='{Y(g):.1f}' r='5' fill='{color}' stroke='{SURFACE}' stroke-width='2'>"
                 f"<title>{escape(name)}: {ai:.0f} FLOP/B, {g:.0f} GFLOP/s</title></circle>")
-        svg.text(X(ai) + 8, Y(g) + 4, name.split(" (")[0], 10, INK2)
+        dy = {"vec128": -9}.get(impl, 4)  # nudge labels of neighbouring points apart
+        left = impl == "tile2d"
+        svg.text(X(ai) + (-8 if left else 8), Y(g) + dy, name.split(" (")[0], 10, INK2, "end" if left else "start")
     svg.save(path)
 
 
@@ -354,11 +358,14 @@ def main():
         ladder_table(t, (4096, 4096, 4096), os.path.join(root, "ladder_4096.md"))
         vals = {}
         used = []
+        short = {"cpu_ijk": "CPU ijk", "cpu": "CPU", "naive_uncoal": "Naive", "naive": "Coalesced",
+                 "tiled": "Shared", "padded": "Padded", "tile1d": "1D tile", "tile2d": "2D tile",
+                 "vec128": "Vectorized", "cublas": "cuBLAS"}
         for name, impl, tile, color in LADDER:
             r = t.get((impl, tile, (4096, 4096, 4096)))
             if r:
-                vals[(name, "TFLOP/s")] = r["kernel_gflops"] / 1000
-                used.append(name)
+                vals[(short[impl], "TFLOP/s")] = r["kernel_gflops"] / 1000
+                used.append(short[impl])
         if used:
             W = 760
             grouped_bars(os.path.join(out, "ladder_4096.svg"), "Optimization ladder at 4096³",

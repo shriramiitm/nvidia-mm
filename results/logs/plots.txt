@@ -1,1 +1,1 @@
-wrote results/plots/: gflops_by_impl.svg tile_sizes.svg padding_effect.svg kernel_share_e2e.svg extensions.svg percent_of_cublas.svg edge_sweep.svg time_vs_wavefronts.svg
+wrote results/plots/: gflops_by_impl.svg tile_sizes.svg padding_effect.svg kernel_share_e2e.svg extensions.svg percent_of_cublas.svg edge_sweep.svg time_vs_wavefronts.svg ladder_4096.svg sweep_1_naive_uncoal.svg sweep_2_naive.svg sweep_3_tiled.svg sweep_4_padded.svg sweep_5_tile1d.svg sweep_6_tile2d.svg sweep_7_vec128.svg sweep_all.svg sweep_cpu.svg roofline.svg

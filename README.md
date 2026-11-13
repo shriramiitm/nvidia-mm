@@ -55,16 +55,18 @@ copy, saves results to Google Drive as they're written, and downloads a zip.
 
 ## Results (Tesla T4, 4096 × 4096 × 4096, kernel-only, median of 20)
 
-| Kernel | Time (ms) | TFLOPS | Bandwidth (GB/s) | vs cuBLAS | Speedup over naive |
-|---|---|---|---|---|---|
-| CPU (single thread, i-k-j) | 25,850 | 0.005 | 0.01 | 0.1% | 0.013× |
-| Naive (coalesced, 16×16) | 331.4 | 0.41 | 0.61 | 6.3% | 1.0× |
-| Shared-memory tiled (T=32) | 168.4 | 0.82 | 1.20 | 12.4% | 2.0× |
-| Tiled + padding (T=32) | 216.6 | 0.63 | 0.93 | 9.6% | 1.5× |
-| 2D register tiling, 4×4 (regtile) | 47.74 | 2.88 | 4.22 | 43.7% | 6.9× |
-| + Vectorized float4 (vec) | 44.85 | 3.06 | 4.49 | 46.5% | 7.4× |
-| Vectorized, 8×8 per thread (vec128) | 25.47 | 5.40 | 7.90 | **81.8%** | **13.0×** |
-| cuBLAS SGEMM (reference) | 20.85 | 6.59 | 9.66 | 100% | 15.9× |
+| Step | Kernel | Time (ms) | TFLOPS | Bandwidth (GB/s) | vs cuBLAS | Speedup over naive | Over previous step |
+|---|---|---|---|---|---|---|---|
+| 2 | CPU, i-k-j | 26,470 | 0.005 | 0.008 | 0.1% | 0.043× | – |
+| 3 | Naive GPU (uncoalesced) | 1143 | 0.12 | 0.18 | 1.8% | 1.0× | – |
+| 4 | Global-memory coalesced (required naive) | 329.9 | 0.42 | 0.61 | 6.2% | 3.5× | 3.46× |
+| 5 | Shared memory, T=32 (required tiled) | 163.5 | 0.84 | 1.23 | 12.5% | 7.0× | 2.02× |
+| 5b | Shared + padding, T=32 (required padded) | 204.5 | 0.67 | 0.99 | 10.0% | 5.6× | 0.80× |
+| 6 | 1D block tiling (8×1) | 73.15 | 1.88 | 2.75 | 27.9% | 15.6× | 2.24× |
+| 7 | 2D block tiling (8×8) | 35.40 | 3.88 | 5.69 | 57.7% | 32.3× | 2.07× |
+| 8 | Vectorized (`float4`, 8×8) | 24.56 | **5.60** | 8.20 | **83.2%** | **46.5×** | 1.44× |
+| – | cuBLAS SGEMM (reference) | 20.44 | 6.72 | 9.85 | 100% | 55.9× | – |
 
-Bandwidth = (A + B + C bytes) / kernel time. All 327 correctness checks pass. All shapes, profiler evidence
-and analysis are in the [report](docs/report.md).
+Bandwidth = (A + B + C bytes) / kernel time. All 399 correctness checks pass. Every shape, the size sweep,
+the roofline and the profiler evidence are in the [report](docs/report.md) and the
+[optimization log](docs/optimization_journey.md).

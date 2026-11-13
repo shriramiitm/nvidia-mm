@@ -1,19 +1,19 @@
-[6399] matmul@127.0.0.1
+[5777] matmul@127.0.0.1
   void matmul_tiled<16, 0, 0>(const float *, const float *, float *, int, int, int) (64, 64, 1)x(16, 16, 1), Context 1, Stream 7, Device 0, CC 7.5
     Section: GPU Speed Of Light Throughput
     ----------------------- ----------- ------------
     Metric Name             Metric Unit Metric Value
     ----------------------- ----------- ------------
     DRAM Frequency                  Ghz         5.00
-    SM Frequency                    Mhz       585.00
-    Elapsed Cycles                cycle    3,383,260
-    Memory Throughput                 %        74.54
+    SM Frequency                    Mhz       584.99
+    Elapsed Cycles                cycle    3,382,220
+    Memory Throughput                 %        74.53
     DRAM Throughput                   %        10.78
     Duration                         ms         5.78
-    L1/TEX Cache Throughput           %        95.51
-    L2 Cache Throughput               %        10.05
-    SM Active Cycles              cycle 3,361,397.70
-    Compute (SM) Throughput           %        74.54
+    L1/TEX Cache Throughput           %        95.50
+    L2 Cache Throughput               %        10.06
+    SM Active Cycles              cycle 3,361,373.12
+    Compute (SM) Throughput           %        74.53
     ----------------------- ----------- ------------
 
     INF   Compute and Memory are well-balanced: To reduce runtime, both computation and memory traffic must be reduced. 
@@ -56,11 +56,11 @@
     Local Memory Spilling Requests                                0
     Local Memory Spilling Request Overhead           %            0
     Memory Throughput                          Gbyte/s        34.47
-    Mem Busy                                         %        47.76
-    Max Bandwidth                                    %        74.54
-    L1/TEX Hit Rate                                  %         5.99
-    L2 Hit Rate                                      %        80.67
-    Mem Pipes Busy                                   %        74.54
+    Mem Busy                                         %        47.75
+    Max Bandwidth                                    %        74.53
+    L1/TEX Hit Rate                                  %         5.98
+    L2 Hit Rate                                      %        80.53
+    Mem Pipes Busy                                   %        74.53
     -------------------------------------- ----------- ------------
 
     Section: Scheduler Statistics
@@ -74,7 +74,7 @@
     Eligible Warps Per Scheduler        warp         0.81
     ---------------------------- ----------- ------------
 
-    OPT   Est. Local Speedup: 25.46%                                                                                    
+    OPT   Est. Local Speedup: 25.47%                                                                                    
           Every scheduler is capable of issuing one instruction per cycle, but for this workload each scheduler only    
           issues an instruction every 4.0 cycles. This might leave hardware resources underutilized and may lead to     
           less optimal performance. Out of the maximum of 8 warps per scheduler, this workload allocates an average of  
@@ -94,12 +94,12 @@
     Avg. Not Predicated Off Threads Per Warp                    31.98
     ---------------------------------------- ----------- ------------
 
-    OPT   Est. Speedup: 25.46%                                                                                          
+    OPT   Est. Speedup: 25.47%                                                                                          
           On average, each warp of this workload spends 17.4 cycles being stalled waiting for the MIO (memory           
           input/output) instruction queue to be not full. This stall reason is high in cases of extreme utilization of  
           the MIO pipelines, which include special math instructions, dynamic branches, as well as shared memory        
           instructions. When caused by shared memory accesses, trying to use fewer but wider loads can reduce pipeline  
-          pressure. This stall type represents about 55.4% of the total average of 31.4 cycles between issuing two      
+          pressure. This stall type represents about 55.5% of the total average of 31.4 cycles between issuing two      
           instructions.                                                                                                 
     ----- --------------------------------------------------------------------------------------------------------------
     INF   Check the Warp Stall Sampling (All Samples) table for the top stall locations in your source based on         
@@ -113,8 +113,8 @@
     ---------------------------------------- ----------- ------------
     Avg. Executed Instructions Per Scheduler        inst   846,028.80
     Executed Instructions                           inst  135,364,608
-    Avg. Issued Instructions Per Scheduler          inst   846,080.91
-    Issued Instructions                             inst  135,372,946
+    Avg. Issued Instructions Per Scheduler          inst   846,080.93
+    Issued Instructions                             inst  135,372,948
     ---------------------------------------- ----------- ------------
 
     Section: Launch Statistics
@@ -148,24 +148,24 @@
     Block Limit Warps                     block            4
     Theoretical Active Warps per SM        warp           32
     Theoretical Occupancy                     %          100
-    Achieved Occupancy                        %        98.68
-    Achieved Active Warps Per SM           warp        31.58
+    Achieved Occupancy                        %        98.66
+    Achieved Active Warps Per SM           warp        31.57
     ------------------------------- ----------- ------------
 
     Section: GPU and Memory Workload Distribution
     -------------------------- ----------- ------------
     Metric Name                Metric Unit Metric Value
     -------------------------- ----------- ------------
-    Average DRAM Active Cycles       cycle    3,115,245
-    Total DRAM Elapsed Cycles        cycle  231,260,160
-    Average L1 Active Cycles         cycle 3,361,397.70
-    Total L1 Elapsed Cycles          cycle  135,316,768
-    Average L2 Active Cycles         cycle 4,578,260.19
-    Total L2 Elapsed Cycles          cycle  158,231,200
-    Average SM Active Cycles         cycle 3,361,397.70
-    Total SM Elapsed Cycles          cycle  135,316,768
-    Average SMSP Active Cycles       cycle 3,361,078.10
-    Total SMSP Elapsed Cycles        cycle  541,267,072
+    Average DRAM Active Cycles       cycle 3,114,344.50
+    Total DRAM Elapsed Cycles        cycle  231,114,752
+    Average L1 Active Cycles         cycle 3,361,373.12
+    Total L1 Elapsed Cycles          cycle  135,336,664
+    Average L2 Active Cycles         cycle 4,563,443.91
+    Total L2 Elapsed Cycles          cycle  158,183,264
+    Average SM Active Cycles         cycle 3,361,373.12
+    Total SM Elapsed Cycles          cycle  135,336,664
+    Average SMSP Active Cycles       cycle 3,360,947.90
+    Total SMSP Elapsed Cycles        cycle  541,346,656
     -------------------------- ----------- ------------
 
     Section: Source Counters

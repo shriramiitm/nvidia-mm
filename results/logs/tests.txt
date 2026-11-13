@@ -1,4 +1,6 @@
 [PASS] cpu vs numpy (M=64 K=64 N=64)            max_abs_err=2.917e-06 finite=True PASS
+[PASS] cpu_ijk vs cpu (M=64 K=64 N=64)          max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
+[PASS] naive_uncoal vs cpu (M=64 K=64 N=64)     max_abs_err=1.907e-06 max_rel_err=5.586e-04 violations=0 nonfinite=0 PASS
 [PASS] naive vs cpu (M=64 K=64 N=64)            max_abs_err=1.907e-06 max_rel_err=5.586e-04 violations=0 nonfinite=0 PASS
 [PASS] tiled T=8 vs cpu (M=64 K=64 N=64)        max_abs_err=1.907e-06 max_rel_err=5.586e-04 violations=0 nonfinite=0 PASS
 [PASS] tiled T=16 vs cpu (M=64 K=64 N=64)       max_abs_err=1.907e-06 max_rel_err=5.586e-04 violations=0 nonfinite=0 PASS
@@ -12,11 +14,15 @@
 [PASS] padded_ta T=8 vs cpu (M=64 K=64 N=64)    max_abs_err=1.907e-06 max_rel_err=5.586e-04 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=16 vs cpu (M=64 K=64 N=64)   max_abs_err=1.907e-06 max_rel_err=5.586e-04 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=32 vs cpu (M=64 K=64 N=64)   max_abs_err=1.907e-06 max_rel_err=5.586e-04 violations=0 nonfinite=0 PASS
+[PASS] tile1d vs cpu (M=64 K=64 N=64)           max_abs_err=1.907e-06 max_rel_err=5.586e-04 violations=0 nonfinite=0 PASS
+[PASS] tile2d vs cpu (M=64 K=64 N=64)           max_abs_err=1.907e-06 max_rel_err=5.586e-04 violations=0 nonfinite=0 PASS
 [PASS] regtile vs cpu (M=64 K=64 N=64)          max_abs_err=1.907e-06 max_rel_err=5.586e-04 violations=0 nonfinite=0 PASS
 [PASS] vec vs cpu (M=64 K=64 N=64)              max_abs_err=1.907e-06 max_rel_err=5.586e-04 violations=0 nonfinite=0 PASS
 [PASS] vec128 vs cpu (M=64 K=64 N=64)           max_abs_err=1.907e-06 max_rel_err=5.586e-04 violations=0 nonfinite=0 PASS
 [PASS] cublas vs cpu (M=64 K=64 N=64)           max_abs_err=3.338e-06 max_rel_err=3.599e-04 violations=0 nonfinite=0 PASS
 [PASS] cpu vs numpy (M=200 K=16 N=8)            max_abs_err=6.415e-07 finite=True PASS
+[PASS] cpu_ijk vs cpu (M=200 K=16 N=8)          max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
+[PASS] naive_uncoal vs cpu (M=200 K=16 N=8)     max_abs_err=4.768e-07 max_rel_err=2.065e-05 violations=0 nonfinite=0 PASS
 [PASS] naive vs cpu (M=200 K=16 N=8)            max_abs_err=4.768e-07 max_rel_err=2.065e-05 violations=0 nonfinite=0 PASS
 [PASS] tiled T=8 vs cpu (M=200 K=16 N=8)        max_abs_err=4.768e-07 max_rel_err=2.065e-05 violations=0 nonfinite=0 PASS
 [PASS] tiled T=16 vs cpu (M=200 K=16 N=8)       max_abs_err=4.768e-07 max_rel_err=2.065e-05 violations=0 nonfinite=0 PASS
@@ -30,11 +36,15 @@
 [PASS] padded_ta T=8 vs cpu (M=200 K=16 N=8)    max_abs_err=4.768e-07 max_rel_err=2.065e-05 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=16 vs cpu (M=200 K=16 N=8)   max_abs_err=4.768e-07 max_rel_err=2.065e-05 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=32 vs cpu (M=200 K=16 N=8)   max_abs_err=4.768e-07 max_rel_err=2.065e-05 violations=0 nonfinite=0 PASS
+[PASS] tile1d vs cpu (M=200 K=16 N=8)           max_abs_err=4.768e-07 max_rel_err=2.065e-05 violations=0 nonfinite=0 PASS
+[PASS] tile2d vs cpu (M=200 K=16 N=8)           max_abs_err=4.768e-07 max_rel_err=2.065e-05 violations=0 nonfinite=0 PASS
 [PASS] regtile vs cpu (M=200 K=16 N=8)          max_abs_err=4.768e-07 max_rel_err=2.065e-05 violations=0 nonfinite=0 PASS
 [PASS] vec vs cpu (M=200 K=16 N=8)              max_abs_err=4.768e-07 max_rel_err=2.065e-05 violations=0 nonfinite=0 PASS
 [PASS] vec128 vs cpu (M=200 K=16 N=8)           max_abs_err=4.768e-07 max_rel_err=2.065e-05 violations=0 nonfinite=0 PASS
 [PASS] cublas vs cpu (M=200 K=16 N=8)           max_abs_err=4.768e-07 max_rel_err=2.065e-05 violations=0 nonfinite=0 PASS
 [PASS] cpu vs numpy (M=8 K=16 N=200)            max_abs_err=5.925e-07 finite=True PASS
+[PASS] cpu_ijk vs cpu (M=8 K=16 N=200)          max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
+[PASS] naive_uncoal vs cpu (M=8 K=16 N=200)     max_abs_err=4.768e-07 max_rel_err=2.268e-03 violations=0 nonfinite=0 PASS
 [PASS] naive vs cpu (M=8 K=16 N=200)            max_abs_err=4.768e-07 max_rel_err=2.268e-03 violations=0 nonfinite=0 PASS
 [PASS] tiled T=8 vs cpu (M=8 K=16 N=200)        max_abs_err=4.768e-07 max_rel_err=2.268e-03 violations=0 nonfinite=0 PASS
 [PASS] tiled T=16 vs cpu (M=8 K=16 N=200)       max_abs_err=4.768e-07 max_rel_err=2.268e-03 violations=0 nonfinite=0 PASS
@@ -48,11 +58,15 @@
 [PASS] padded_ta T=8 vs cpu (M=8 K=16 N=200)    max_abs_err=4.768e-07 max_rel_err=2.268e-03 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=16 vs cpu (M=8 K=16 N=200)   max_abs_err=4.768e-07 max_rel_err=2.268e-03 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=32 vs cpu (M=8 K=16 N=200)   max_abs_err=4.768e-07 max_rel_err=2.268e-03 violations=0 nonfinite=0 PASS
+[PASS] tile1d vs cpu (M=8 K=16 N=200)           max_abs_err=4.768e-07 max_rel_err=2.268e-03 violations=0 nonfinite=0 PASS
+[PASS] tile2d vs cpu (M=8 K=16 N=200)           max_abs_err=4.768e-07 max_rel_err=2.268e-03 violations=0 nonfinite=0 PASS
 [PASS] regtile vs cpu (M=8 K=16 N=200)          max_abs_err=4.768e-07 max_rel_err=2.268e-03 violations=0 nonfinite=0 PASS
 [PASS] vec vs cpu (M=8 K=16 N=200)              max_abs_err=4.768e-07 max_rel_err=2.268e-03 violations=0 nonfinite=0 PASS
 [PASS] vec128 vs cpu (M=8 K=16 N=200)           max_abs_err=4.768e-07 max_rel_err=2.268e-03 violations=0 nonfinite=0 PASS
 [PASS] cublas vs cpu (M=8 K=16 N=200)           max_abs_err=7.153e-07 max_rel_err=4.695e-03 violations=0 nonfinite=0 PASS
 [PASS] cpu vs numpy (M=5 K=3 N=7)               max_abs_err=8.415e-08 finite=True PASS
+[PASS] cpu_ijk vs cpu (M=5 K=3 N=7)             max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
+[PASS] naive_uncoal vs cpu (M=5 K=3 N=7)        max_abs_err=1.192e-07 max_rel_err=3.426e-06 violations=0 nonfinite=0 PASS
 [PASS] naive vs cpu (M=5 K=3 N=7)               max_abs_err=1.192e-07 max_rel_err=3.426e-06 violations=0 nonfinite=0 PASS
 [PASS] tiled T=8 vs cpu (M=5 K=3 N=7)           max_abs_err=1.192e-07 max_rel_err=3.426e-06 violations=0 nonfinite=0 PASS
 [PASS] tiled T=16 vs cpu (M=5 K=3 N=7)          max_abs_err=1.192e-07 max_rel_err=3.426e-06 violations=0 nonfinite=0 PASS
@@ -66,11 +80,15 @@
 [PASS] padded_ta T=8 vs cpu (M=5 K=3 N=7)       max_abs_err=1.192e-07 max_rel_err=3.426e-06 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=16 vs cpu (M=5 K=3 N=7)      max_abs_err=1.192e-07 max_rel_err=3.426e-06 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=32 vs cpu (M=5 K=3 N=7)      max_abs_err=1.192e-07 max_rel_err=3.426e-06 violations=0 nonfinite=0 PASS
+[PASS] tile1d vs cpu (M=5 K=3 N=7)              max_abs_err=1.192e-07 max_rel_err=3.426e-06 violations=0 nonfinite=0 PASS
+[PASS] tile2d vs cpu (M=5 K=3 N=7)              max_abs_err=1.192e-07 max_rel_err=3.426e-06 violations=0 nonfinite=0 PASS
 [PASS] regtile vs cpu (M=5 K=3 N=7)             max_abs_err=1.192e-07 max_rel_err=3.426e-06 violations=0 nonfinite=0 PASS
 [PASS] vec vs cpu (M=5 K=3 N=7)                 max_abs_err=1.192e-07 max_rel_err=3.426e-06 violations=0 nonfinite=0 PASS
 [PASS] vec128 vs cpu (M=5 K=3 N=7)              max_abs_err=1.192e-07 max_rel_err=3.426e-06 violations=0 nonfinite=0 PASS
 [PASS] cublas vs cpu (M=5 K=3 N=7)              max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
 [PASS] cpu vs numpy (M=16 K=16 N=16)            max_abs_err=4.770e-07 finite=True PASS
+[PASS] cpu_ijk vs cpu (M=16 K=16 N=16)          max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
+[PASS] naive_uncoal vs cpu (M=16 K=16 N=16)     max_abs_err=4.768e-07 max_rel_err=9.552e-05 violations=0 nonfinite=0 PASS
 [PASS] naive vs cpu (M=16 K=16 N=16)            max_abs_err=4.768e-07 max_rel_err=9.552e-05 violations=0 nonfinite=0 PASS
 [PASS] tiled T=8 vs cpu (M=16 K=16 N=16)        max_abs_err=4.768e-07 max_rel_err=9.552e-05 violations=0 nonfinite=0 PASS
 [PASS] tiled T=16 vs cpu (M=16 K=16 N=16)       max_abs_err=4.768e-07 max_rel_err=9.552e-05 violations=0 nonfinite=0 PASS
@@ -84,11 +102,15 @@
 [PASS] padded_ta T=8 vs cpu (M=16 K=16 N=16)    max_abs_err=4.768e-07 max_rel_err=9.552e-05 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=16 vs cpu (M=16 K=16 N=16)   max_abs_err=4.768e-07 max_rel_err=9.552e-05 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=32 vs cpu (M=16 K=16 N=16)   max_abs_err=4.768e-07 max_rel_err=9.552e-05 violations=0 nonfinite=0 PASS
+[PASS] tile1d vs cpu (M=16 K=16 N=16)           max_abs_err=4.768e-07 max_rel_err=9.552e-05 violations=0 nonfinite=0 PASS
+[PASS] tile2d vs cpu (M=16 K=16 N=16)           max_abs_err=4.768e-07 max_rel_err=9.552e-05 violations=0 nonfinite=0 PASS
 [PASS] regtile vs cpu (M=16 K=16 N=16)          max_abs_err=4.768e-07 max_rel_err=9.552e-05 violations=0 nonfinite=0 PASS
 [PASS] vec vs cpu (M=16 K=16 N=16)              max_abs_err=4.768e-07 max_rel_err=9.552e-05 violations=0 nonfinite=0 PASS
 [PASS] vec128 vs cpu (M=16 K=16 N=16)           max_abs_err=4.768e-07 max_rel_err=9.552e-05 violations=0 nonfinite=0 PASS
 [PASS] cublas vs cpu (M=16 K=16 N=16)           max_abs_err=4.768e-07 max_rel_err=4.654e-05 violations=0 nonfinite=0 PASS
 [PASS] cpu vs numpy (M=32 K=32 N=32)            max_abs_err=1.271e-06 finite=True PASS
+[PASS] cpu_ijk vs cpu (M=32 K=32 N=32)          max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
+[PASS] naive_uncoal vs cpu (M=32 K=32 N=32)     max_abs_err=9.537e-07 max_rel_err=1.520e-05 violations=0 nonfinite=0 PASS
 [PASS] naive vs cpu (M=32 K=32 N=32)            max_abs_err=9.537e-07 max_rel_err=1.520e-05 violations=0 nonfinite=0 PASS
 [PASS] tiled T=8 vs cpu (M=32 K=32 N=32)        max_abs_err=9.537e-07 max_rel_err=1.520e-05 violations=0 nonfinite=0 PASS
 [PASS] tiled T=16 vs cpu (M=32 K=32 N=32)       max_abs_err=9.537e-07 max_rel_err=1.520e-05 violations=0 nonfinite=0 PASS
@@ -102,11 +124,15 @@
 [PASS] padded_ta T=8 vs cpu (M=32 K=32 N=32)    max_abs_err=9.537e-07 max_rel_err=1.520e-05 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=16 vs cpu (M=32 K=32 N=32)   max_abs_err=9.537e-07 max_rel_err=1.520e-05 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=32 vs cpu (M=32 K=32 N=32)   max_abs_err=9.537e-07 max_rel_err=1.520e-05 violations=0 nonfinite=0 PASS
+[PASS] tile1d vs cpu (M=32 K=32 N=32)           max_abs_err=9.537e-07 max_rel_err=1.520e-05 violations=0 nonfinite=0 PASS
+[PASS] tile2d vs cpu (M=32 K=32 N=32)           max_abs_err=9.537e-07 max_rel_err=1.520e-05 violations=0 nonfinite=0 PASS
 [PASS] regtile vs cpu (M=32 K=32 N=32)          max_abs_err=9.537e-07 max_rel_err=1.520e-05 violations=0 nonfinite=0 PASS
 [PASS] vec vs cpu (M=32 K=32 N=32)              max_abs_err=9.537e-07 max_rel_err=1.520e-05 violations=0 nonfinite=0 PASS
 [PASS] vec128 vs cpu (M=32 K=32 N=32)           max_abs_err=9.537e-07 max_rel_err=1.520e-05 violations=0 nonfinite=0 PASS
 [PASS] cublas vs cpu (M=32 K=32 N=32)           max_abs_err=9.537e-07 max_rel_err=1.520e-05 violations=0 nonfinite=0 PASS
 [PASS] cpu vs numpy (M=7 K=9 N=9)               max_abs_err=1.701e-07 finite=True PASS
+[PASS] cpu_ijk vs cpu (M=7 K=9 N=9)             max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
+[PASS] naive_uncoal vs cpu (M=7 K=9 N=9)        max_abs_err=2.384e-07 max_rel_err=4.983e-07 violations=0 nonfinite=0 PASS
 [PASS] naive vs cpu (M=7 K=9 N=9)               max_abs_err=2.384e-07 max_rel_err=4.983e-07 violations=0 nonfinite=0 PASS
 [PASS] tiled T=8 vs cpu (M=7 K=9 N=9)           max_abs_err=2.384e-07 max_rel_err=4.983e-07 violations=0 nonfinite=0 PASS
 [PASS] tiled T=16 vs cpu (M=7 K=9 N=9)          max_abs_err=2.384e-07 max_rel_err=4.983e-07 violations=0 nonfinite=0 PASS
@@ -120,11 +146,15 @@
 [PASS] padded_ta T=8 vs cpu (M=7 K=9 N=9)       max_abs_err=2.384e-07 max_rel_err=4.983e-07 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=16 vs cpu (M=7 K=9 N=9)      max_abs_err=2.384e-07 max_rel_err=4.983e-07 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=32 vs cpu (M=7 K=9 N=9)      max_abs_err=2.384e-07 max_rel_err=4.983e-07 violations=0 nonfinite=0 PASS
+[PASS] tile1d vs cpu (M=7 K=9 N=9)              max_abs_err=2.384e-07 max_rel_err=4.983e-07 violations=0 nonfinite=0 PASS
+[PASS] tile2d vs cpu (M=7 K=9 N=9)              max_abs_err=2.384e-07 max_rel_err=4.983e-07 violations=0 nonfinite=0 PASS
 [PASS] regtile vs cpu (M=7 K=9 N=9)             max_abs_err=2.384e-07 max_rel_err=4.983e-07 violations=0 nonfinite=0 PASS
 [PASS] vec vs cpu (M=7 K=9 N=9)                 max_abs_err=2.384e-07 max_rel_err=4.983e-07 violations=0 nonfinite=0 PASS
 [PASS] vec128 vs cpu (M=7 K=9 N=9)              max_abs_err=2.384e-07 max_rel_err=4.983e-07 violations=0 nonfinite=0 PASS
 [PASS] cublas vs cpu (M=7 K=9 N=9)              max_abs_err=2.384e-07 max_rel_err=9.967e-07 violations=0 nonfinite=0 PASS
 [PASS] cpu vs numpy (M=15 K=17 N=16)            max_abs_err=4.805e-07 finite=True PASS
+[PASS] cpu_ijk vs cpu (M=15 K=17 N=16)          max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
+[PASS] naive_uncoal vs cpu (M=15 K=17 N=16)     max_abs_err=4.768e-07 max_rel_err=2.635e-05 violations=0 nonfinite=0 PASS
 [PASS] naive vs cpu (M=15 K=17 N=16)            max_abs_err=4.768e-07 max_rel_err=2.635e-05 violations=0 nonfinite=0 PASS
 [PASS] tiled T=8 vs cpu (M=15 K=17 N=16)        max_abs_err=4.768e-07 max_rel_err=2.635e-05 violations=0 nonfinite=0 PASS
 [PASS] tiled T=16 vs cpu (M=15 K=17 N=16)       max_abs_err=4.768e-07 max_rel_err=2.635e-05 violations=0 nonfinite=0 PASS
@@ -138,11 +168,15 @@
 [PASS] padded_ta T=8 vs cpu (M=15 K=17 N=16)    max_abs_err=4.768e-07 max_rel_err=2.635e-05 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=16 vs cpu (M=15 K=17 N=16)   max_abs_err=4.768e-07 max_rel_err=2.635e-05 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=32 vs cpu (M=15 K=17 N=16)   max_abs_err=4.768e-07 max_rel_err=2.635e-05 violations=0 nonfinite=0 PASS
+[PASS] tile1d vs cpu (M=15 K=17 N=16)           max_abs_err=4.768e-07 max_rel_err=2.635e-05 violations=0 nonfinite=0 PASS
+[PASS] tile2d vs cpu (M=15 K=17 N=16)           max_abs_err=4.768e-07 max_rel_err=2.635e-05 violations=0 nonfinite=0 PASS
 [PASS] regtile vs cpu (M=15 K=17 N=16)          max_abs_err=4.768e-07 max_rel_err=2.635e-05 violations=0 nonfinite=0 PASS
 [PASS] vec vs cpu (M=15 K=17 N=16)              max_abs_err=4.768e-07 max_rel_err=2.635e-05 violations=0 nonfinite=0 PASS
 [PASS] vec128 vs cpu (M=15 K=17 N=16)           max_abs_err=4.768e-07 max_rel_err=2.635e-05 violations=0 nonfinite=0 PASS
 [PASS] cublas vs cpu (M=15 K=17 N=16)           max_abs_err=4.768e-07 max_rel_err=5.454e-05 violations=0 nonfinite=0 PASS
 [PASS] cpu vs numpy (M=31 K=31 N=31)            max_abs_err=1.340e-06 finite=True PASS
+[PASS] cpu_ijk vs cpu (M=31 K=31 N=31)          max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
+[PASS] naive_uncoal vs cpu (M=31 K=31 N=31)     max_abs_err=9.537e-07 max_rel_err=1.196e-05 violations=0 nonfinite=0 PASS
 [PASS] naive vs cpu (M=31 K=31 N=31)            max_abs_err=9.537e-07 max_rel_err=1.196e-05 violations=0 nonfinite=0 PASS
 [PASS] tiled T=8 vs cpu (M=31 K=31 N=31)        max_abs_err=9.537e-07 max_rel_err=1.196e-05 violations=0 nonfinite=0 PASS
 [PASS] tiled T=16 vs cpu (M=31 K=31 N=31)       max_abs_err=9.537e-07 max_rel_err=1.196e-05 violations=0 nonfinite=0 PASS
@@ -156,11 +190,15 @@
 [PASS] padded_ta T=8 vs cpu (M=31 K=31 N=31)    max_abs_err=9.537e-07 max_rel_err=1.196e-05 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=16 vs cpu (M=31 K=31 N=31)   max_abs_err=9.537e-07 max_rel_err=1.196e-05 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=32 vs cpu (M=31 K=31 N=31)   max_abs_err=9.537e-07 max_rel_err=1.196e-05 violations=0 nonfinite=0 PASS
+[PASS] tile1d vs cpu (M=31 K=31 N=31)           max_abs_err=9.537e-07 max_rel_err=1.196e-05 violations=0 nonfinite=0 PASS
+[PASS] tile2d vs cpu (M=31 K=31 N=31)           max_abs_err=9.537e-07 max_rel_err=1.196e-05 violations=0 nonfinite=0 PASS
 [PASS] regtile vs cpu (M=31 K=31 N=31)          max_abs_err=9.537e-07 max_rel_err=1.196e-05 violations=0 nonfinite=0 PASS
 [PASS] vec vs cpu (M=31 K=31 N=31)              max_abs_err=9.537e-07 max_rel_err=1.196e-05 violations=0 nonfinite=0 PASS
 [PASS] vec128 vs cpu (M=31 K=31 N=31)           max_abs_err=9.537e-07 max_rel_err=1.196e-05 violations=0 nonfinite=0 PASS
 [PASS] cublas vs cpu (M=31 K=31 N=31)           max_abs_err=9.537e-07 max_rel_err=1.196e-05 violations=0 nonfinite=0 PASS
 [PASS] cpu vs numpy (M=33 K=33 N=33)            max_abs_err=1.091e-06 finite=True PASS
+[PASS] cpu_ijk vs cpu (M=33 K=33 N=33)          max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
+[PASS] naive_uncoal vs cpu (M=33 K=33 N=33)     max_abs_err=7.153e-07 max_rel_err=8.805e-04 violations=0 nonfinite=0 PASS
 [PASS] naive vs cpu (M=33 K=33 N=33)            max_abs_err=7.153e-07 max_rel_err=8.805e-04 violations=0 nonfinite=0 PASS
 [PASS] tiled T=8 vs cpu (M=33 K=33 N=33)        max_abs_err=7.153e-07 max_rel_err=8.805e-04 violations=0 nonfinite=0 PASS
 [PASS] tiled T=16 vs cpu (M=33 K=33 N=33)       max_abs_err=7.153e-07 max_rel_err=8.805e-04 violations=0 nonfinite=0 PASS
@@ -174,11 +212,15 @@
 [PASS] padded_ta T=8 vs cpu (M=33 K=33 N=33)    max_abs_err=7.153e-07 max_rel_err=8.805e-04 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=16 vs cpu (M=33 K=33 N=33)   max_abs_err=7.153e-07 max_rel_err=8.805e-04 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=32 vs cpu (M=33 K=33 N=33)   max_abs_err=7.153e-07 max_rel_err=8.805e-04 violations=0 nonfinite=0 PASS
+[PASS] tile1d vs cpu (M=33 K=33 N=33)           max_abs_err=7.153e-07 max_rel_err=8.805e-04 violations=0 nonfinite=0 PASS
+[PASS] tile2d vs cpu (M=33 K=33 N=33)           max_abs_err=7.153e-07 max_rel_err=8.805e-04 violations=0 nonfinite=0 PASS
 [PASS] regtile vs cpu (M=33 K=33 N=33)          max_abs_err=7.153e-07 max_rel_err=8.805e-04 violations=0 nonfinite=0 PASS
 [PASS] vec vs cpu (M=33 K=33 N=33)              max_abs_err=7.153e-07 max_rel_err=8.805e-04 violations=0 nonfinite=0 PASS
 [PASS] vec128 vs cpu (M=33 K=33 N=33)           max_abs_err=7.153e-07 max_rel_err=8.805e-04 violations=0 nonfinite=0 PASS
 [PASS] cublas vs cpu (M=33 K=33 N=33)           max_abs_err=9.537e-07 max_rel_err=6.988e-04 violations=0 nonfinite=0 PASS
 [PASS] cpu vs numpy (M=1 K=64 N=64)             max_abs_err=1.251e-06 finite=True PASS
+[PASS] cpu_ijk vs cpu (M=1 K=64 N=64)           max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
+[PASS] naive_uncoal vs cpu (M=1 K=64 N=64)      max_abs_err=9.537e-07 max_rel_err=4.113e-06 violations=0 nonfinite=0 PASS
 [PASS] naive vs cpu (M=1 K=64 N=64)             max_abs_err=9.537e-07 max_rel_err=4.113e-06 violations=0 nonfinite=0 PASS
 [PASS] tiled T=8 vs cpu (M=1 K=64 N=64)         max_abs_err=9.537e-07 max_rel_err=4.113e-06 violations=0 nonfinite=0 PASS
 [PASS] tiled T=16 vs cpu (M=1 K=64 N=64)        max_abs_err=9.537e-07 max_rel_err=4.113e-06 violations=0 nonfinite=0 PASS
@@ -192,11 +234,15 @@
 [PASS] padded_ta T=8 vs cpu (M=1 K=64 N=64)     max_abs_err=9.537e-07 max_rel_err=4.113e-06 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=16 vs cpu (M=1 K=64 N=64)    max_abs_err=9.537e-07 max_rel_err=4.113e-06 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=32 vs cpu (M=1 K=64 N=64)    max_abs_err=9.537e-07 max_rel_err=4.113e-06 violations=0 nonfinite=0 PASS
+[PASS] tile1d vs cpu (M=1 K=64 N=64)            max_abs_err=9.537e-07 max_rel_err=4.113e-06 violations=0 nonfinite=0 PASS
+[PASS] tile2d vs cpu (M=1 K=64 N=64)            max_abs_err=9.537e-07 max_rel_err=4.113e-06 violations=0 nonfinite=0 PASS
 [PASS] regtile vs cpu (M=1 K=64 N=64)           max_abs_err=9.537e-07 max_rel_err=4.113e-06 violations=0 nonfinite=0 PASS
 [PASS] vec vs cpu (M=1 K=64 N=64)               max_abs_err=9.537e-07 max_rel_err=4.113e-06 violations=0 nonfinite=0 PASS
 [PASS] vec128 vs cpu (M=1 K=64 N=64)            max_abs_err=9.537e-07 max_rel_err=4.113e-06 violations=0 nonfinite=0 PASS
 [PASS] cublas vs cpu (M=1 K=64 N=64)            max_abs_err=9.537e-07 max_rel_err=2.525e-06 violations=0 nonfinite=0 PASS
 [PASS] cpu vs numpy (M=64 K=1 N=64)             max_abs_err=2.976e-08 finite=True PASS
+[PASS] cpu_ijk vs cpu (M=64 K=1 N=64)           max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
+[PASS] naive_uncoal vs cpu (M=64 K=1 N=64)      max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
 [PASS] naive vs cpu (M=64 K=1 N=64)             max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
 [PASS] tiled T=8 vs cpu (M=64 K=1 N=64)         max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
 [PASS] tiled T=16 vs cpu (M=64 K=1 N=64)        max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
@@ -210,11 +256,15 @@
 [PASS] padded_ta T=8 vs cpu (M=64 K=1 N=64)     max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=16 vs cpu (M=64 K=1 N=64)    max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=32 vs cpu (M=64 K=1 N=64)    max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
+[PASS] tile1d vs cpu (M=64 K=1 N=64)            max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
+[PASS] tile2d vs cpu (M=64 K=1 N=64)            max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
 [PASS] regtile vs cpu (M=64 K=1 N=64)           max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
 [PASS] vec vs cpu (M=64 K=1 N=64)               max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
 [PASS] vec128 vs cpu (M=64 K=1 N=64)            max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
 [PASS] cublas vs cpu (M=64 K=1 N=64)            max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
 [PASS] cpu vs numpy (M=64 K=64 N=1)             max_abs_err=1.286e-06 finite=True PASS
+[PASS] cpu_ijk vs cpu (M=64 K=64 N=1)           max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
+[PASS] naive_uncoal vs cpu (M=64 K=64 N=1)      max_abs_err=7.153e-07 max_rel_err=1.596e-06 violations=0 nonfinite=0 PASS
 [PASS] naive vs cpu (M=64 K=64 N=1)             max_abs_err=7.153e-07 max_rel_err=1.596e-06 violations=0 nonfinite=0 PASS
 [PASS] tiled T=8 vs cpu (M=64 K=64 N=1)         max_abs_err=7.153e-07 max_rel_err=1.596e-06 violations=0 nonfinite=0 PASS
 [PASS] tiled T=16 vs cpu (M=64 K=64 N=1)        max_abs_err=7.153e-07 max_rel_err=1.596e-06 violations=0 nonfinite=0 PASS
@@ -228,11 +278,15 @@
 [PASS] padded_ta T=8 vs cpu (M=64 K=64 N=1)     max_abs_err=7.153e-07 max_rel_err=1.596e-06 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=16 vs cpu (M=64 K=64 N=1)    max_abs_err=7.153e-07 max_rel_err=1.596e-06 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=32 vs cpu (M=64 K=64 N=1)    max_abs_err=7.153e-07 max_rel_err=1.596e-06 violations=0 nonfinite=0 PASS
+[PASS] tile1d vs cpu (M=64 K=64 N=1)            max_abs_err=7.153e-07 max_rel_err=1.596e-06 violations=0 nonfinite=0 PASS
+[PASS] tile2d vs cpu (M=64 K=64 N=1)            max_abs_err=7.153e-07 max_rel_err=1.596e-06 violations=0 nonfinite=0 PASS
 [PASS] regtile vs cpu (M=64 K=64 N=1)           max_abs_err=7.153e-07 max_rel_err=1.596e-06 violations=0 nonfinite=0 PASS
 [PASS] vec vs cpu (M=64 K=64 N=1)               max_abs_err=7.153e-07 max_rel_err=1.596e-06 violations=0 nonfinite=0 PASS
 [PASS] vec128 vs cpu (M=64 K=64 N=1)            max_abs_err=7.153e-07 max_rel_err=1.596e-06 violations=0 nonfinite=0 PASS
 [PASS] cublas vs cpu (M=64 K=64 N=1)            max_abs_err=1.431e-06 max_rel_err=8.726e-07 violations=0 nonfinite=0 PASS
 [PASS] cpu vs numpy (M=1 K=1 N=1)               max_abs_err=3.436e-09 finite=True PASS
+[PASS] cpu_ijk vs cpu (M=1 K=1 N=1)             max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
+[PASS] naive_uncoal vs cpu (M=1 K=1 N=1)        max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
 [PASS] naive vs cpu (M=1 K=1 N=1)               max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
 [PASS] tiled T=8 vs cpu (M=1 K=1 N=1)           max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
 [PASS] tiled T=16 vs cpu (M=1 K=1 N=1)          max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
@@ -246,11 +300,15 @@
 [PASS] padded_ta T=8 vs cpu (M=1 K=1 N=1)       max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=16 vs cpu (M=1 K=1 N=1)      max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=32 vs cpu (M=1 K=1 N=1)      max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
+[PASS] tile1d vs cpu (M=1 K=1 N=1)              max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
+[PASS] tile2d vs cpu (M=1 K=1 N=1)              max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
 [PASS] regtile vs cpu (M=1 K=1 N=1)             max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
 [PASS] vec vs cpu (M=1 K=1 N=1)                 max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
 [PASS] vec128 vs cpu (M=1 K=1 N=1)              max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
 [PASS] cublas vs cpu (M=1 K=1 N=1)              max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
 [PASS] cpu vs numpy (M=1000 K=513 N=769)        max_abs_err=3.212e-05 finite=True PASS
+[PASS] cpu_ijk vs cpu (M=1000 K=513 N=769)      max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
+[PASS] naive_uncoal vs cpu (M=1000 K=513 N=769) max_abs_err=1.144e-05 max_rel_err=9.563e-02 violations=0 nonfinite=0 PASS
 [PASS] naive vs cpu (M=1000 K=513 N=769)        max_abs_err=1.144e-05 max_rel_err=9.563e-02 violations=0 nonfinite=0 PASS
 [PASS] tiled T=8 vs cpu (M=1000 K=513 N=769)    max_abs_err=1.144e-05 max_rel_err=9.563e-02 violations=0 nonfinite=0 PASS
 [PASS] tiled T=16 vs cpu (M=1000 K=513 N=769)   max_abs_err=1.144e-05 max_rel_err=9.563e-02 violations=0 nonfinite=0 PASS
@@ -264,11 +322,15 @@
 [PASS] padded_ta T=8 vs cpu (M=1000 K=513 N=769) max_abs_err=1.144e-05 max_rel_err=9.563e-02 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=16 vs cpu (M=1000 K=513 N=769) max_abs_err=1.144e-05 max_rel_err=9.563e-02 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=32 vs cpu (M=1000 K=513 N=769) max_abs_err=1.144e-05 max_rel_err=9.563e-02 violations=0 nonfinite=0 PASS
+[PASS] tile1d vs cpu (M=1000 K=513 N=769)       max_abs_err=1.144e-05 max_rel_err=9.563e-02 violations=0 nonfinite=0 PASS
+[PASS] tile2d vs cpu (M=1000 K=513 N=769)       max_abs_err=1.144e-05 max_rel_err=9.563e-02 violations=0 nonfinite=0 PASS
 [PASS] regtile vs cpu (M=1000 K=513 N=769)      max_abs_err=1.144e-05 max_rel_err=9.563e-02 violations=0 nonfinite=0 PASS
 [PASS] vec vs cpu (M=1000 K=513 N=769)          max_abs_err=1.144e-05 max_rel_err=9.563e-02 violations=0 nonfinite=0 PASS
 [PASS] vec128 vs cpu (M=1000 K=513 N=769)       max_abs_err=1.144e-05 max_rel_err=9.563e-02 violations=0 nonfinite=0 PASS
 [PASS] cublas vs cpu (M=1000 K=513 N=769)       max_abs_err=1.144e-05 max_rel_err=9.563e-02 violations=0 nonfinite=0 PASS
 [PASS] cpu vs numpy (M=65 K=63 N=129)           max_abs_err=3.066e-06 finite=True PASS
+[PASS] cpu_ijk vs cpu (M=65 K=63 N=129)         max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
+[PASS] naive_uncoal vs cpu (M=65 K=63 N=129)    max_abs_err=1.907e-06 max_rel_err=1.027e-03 violations=0 nonfinite=0 PASS
 [PASS] naive vs cpu (M=65 K=63 N=129)           max_abs_err=1.907e-06 max_rel_err=1.027e-03 violations=0 nonfinite=0 PASS
 [PASS] tiled T=8 vs cpu (M=65 K=63 N=129)       max_abs_err=1.907e-06 max_rel_err=1.027e-03 violations=0 nonfinite=0 PASS
 [PASS] tiled T=16 vs cpu (M=65 K=63 N=129)      max_abs_err=1.907e-06 max_rel_err=1.027e-03 violations=0 nonfinite=0 PASS
@@ -282,11 +344,15 @@
 [PASS] padded_ta T=8 vs cpu (M=65 K=63 N=129)   max_abs_err=1.907e-06 max_rel_err=1.027e-03 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=16 vs cpu (M=65 K=63 N=129)  max_abs_err=1.907e-06 max_rel_err=1.027e-03 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=32 vs cpu (M=65 K=63 N=129)  max_abs_err=1.907e-06 max_rel_err=1.027e-03 violations=0 nonfinite=0 PASS
+[PASS] tile1d vs cpu (M=65 K=63 N=129)          max_abs_err=1.907e-06 max_rel_err=1.027e-03 violations=0 nonfinite=0 PASS
+[PASS] tile2d vs cpu (M=65 K=63 N=129)          max_abs_err=1.907e-06 max_rel_err=1.027e-03 violations=0 nonfinite=0 PASS
 [PASS] regtile vs cpu (M=65 K=63 N=129)         max_abs_err=1.907e-06 max_rel_err=1.027e-03 violations=0 nonfinite=0 PASS
 [PASS] vec vs cpu (M=65 K=63 N=129)             max_abs_err=1.907e-06 max_rel_err=1.027e-03 violations=0 nonfinite=0 PASS
 [PASS] vec128 vs cpu (M=65 K=63 N=129)          max_abs_err=1.907e-06 max_rel_err=1.027e-03 violations=0 nonfinite=0 PASS
 [PASS] cublas vs cpu (M=65 K=63 N=129)          max_abs_err=3.338e-06 max_rel_err=2.793e-04 violations=0 nonfinite=0 PASS
 [PASS] cpu vs numpy (M=130 K=132 N=260)         max_abs_err=6.948e-06 finite=True PASS
+[PASS] cpu_ijk vs cpu (M=130 K=132 N=260)       max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
+[PASS] naive_uncoal vs cpu (M=130 K=132 N=260)  max_abs_err=3.815e-06 max_rel_err=6.142e-04 violations=0 nonfinite=0 PASS
 [PASS] naive vs cpu (M=130 K=132 N=260)         max_abs_err=3.815e-06 max_rel_err=6.142e-04 violations=0 nonfinite=0 PASS
 [PASS] tiled T=8 vs cpu (M=130 K=132 N=260)     max_abs_err=3.815e-06 max_rel_err=6.142e-04 violations=0 nonfinite=0 PASS
 [PASS] tiled T=16 vs cpu (M=130 K=132 N=260)    max_abs_err=3.815e-06 max_rel_err=6.142e-04 violations=0 nonfinite=0 PASS
@@ -300,11 +366,15 @@
 [PASS] padded_ta T=8 vs cpu (M=130 K=132 N=260) max_abs_err=3.815e-06 max_rel_err=6.142e-04 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=16 vs cpu (M=130 K=132 N=260) max_abs_err=3.815e-06 max_rel_err=6.142e-04 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=32 vs cpu (M=130 K=132 N=260) max_abs_err=3.815e-06 max_rel_err=6.142e-04 violations=0 nonfinite=0 PASS
+[PASS] tile1d vs cpu (M=130 K=132 N=260)        max_abs_err=3.815e-06 max_rel_err=6.142e-04 violations=0 nonfinite=0 PASS
+[PASS] tile2d vs cpu (M=130 K=132 N=260)        max_abs_err=3.815e-06 max_rel_err=6.142e-04 violations=0 nonfinite=0 PASS
 [PASS] regtile vs cpu (M=130 K=132 N=260)       max_abs_err=3.815e-06 max_rel_err=6.142e-04 violations=0 nonfinite=0 PASS
 [PASS] vec vs cpu (M=130 K=132 N=260)           max_abs_err=3.815e-06 max_rel_err=6.142e-04 violations=0 nonfinite=0 PASS
 [PASS] vec128 vs cpu (M=130 K=132 N=260)        max_abs_err=3.815e-06 max_rel_err=6.142e-04 violations=0 nonfinite=0 PASS
 [PASS] cublas vs cpu (M=130 K=132 N=260)        max_abs_err=8.106e-06 max_rel_err=8.182e-04 violations=0 nonfinite=0 PASS
 [PASS] cpu vs numpy (M=129 K=64 N=130)          max_abs_err=3.287e-06 finite=True PASS
+[PASS] cpu_ijk vs cpu (M=129 K=64 N=130)        max_abs_err=0.000e+00 max_rel_err=0.000e+00 violations=0 nonfinite=0 PASS
+[PASS] naive_uncoal vs cpu (M=129 K=64 N=130)   max_abs_err=1.907e-06 max_rel_err=3.660e-04 violations=0 nonfinite=0 PASS
 [PASS] naive vs cpu (M=129 K=64 N=130)          max_abs_err=1.907e-06 max_rel_err=3.660e-04 violations=0 nonfinite=0 PASS
 [PASS] tiled T=8 vs cpu (M=129 K=64 N=130)      max_abs_err=1.907e-06 max_rel_err=3.660e-04 violations=0 nonfinite=0 PASS
 [PASS] tiled T=16 vs cpu (M=129 K=64 N=130)     max_abs_err=1.907e-06 max_rel_err=3.660e-04 violations=0 nonfinite=0 PASS
@@ -318,6 +388,8 @@
 [PASS] padded_ta T=8 vs cpu (M=129 K=64 N=130)  max_abs_err=1.907e-06 max_rel_err=3.660e-04 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=16 vs cpu (M=129 K=64 N=130) max_abs_err=1.907e-06 max_rel_err=3.660e-04 violations=0 nonfinite=0 PASS
 [PASS] padded_ta T=32 vs cpu (M=129 K=64 N=130) max_abs_err=1.907e-06 max_rel_err=3.660e-04 violations=0 nonfinite=0 PASS
+[PASS] tile1d vs cpu (M=129 K=64 N=130)         max_abs_err=1.907e-06 max_rel_err=3.660e-04 violations=0 nonfinite=0 PASS
+[PASS] tile2d vs cpu (M=129 K=64 N=130)         max_abs_err=1.907e-06 max_rel_err=3.660e-04 violations=0 nonfinite=0 PASS
 [PASS] regtile vs cpu (M=129 K=64 N=130)        max_abs_err=1.907e-06 max_rel_err=3.660e-04 violations=0 nonfinite=0 PASS
 [PASS] vec vs cpu (M=129 K=64 N=130)            max_abs_err=1.907e-06 max_rel_err=3.660e-04 violations=0 nonfinite=0 PASS
 [PASS] vec128 vs cpu (M=129 K=64 N=130)         max_abs_err=1.907e-06 max_rel_err=3.660e-04 violations=0 nonfinite=0 PASS
@@ -326,4 +398,4 @@
 [PASS] reject missing input file                
 [PASS] reject bad --tile                        
 
-passed: 327   failed: 0
+passed: 399   failed: 0
