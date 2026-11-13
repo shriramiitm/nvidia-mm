@@ -7,7 +7,7 @@
 #   TILES="8 16 32" bash scripts/run_tests.sh           # tile sizes for tiled/padded
 set -u
 cd "$(dirname "$0")/.."   # run from the repo root
-IMPLS=${IMPLS:-"naive tiled padded tiled_ta padded_ta regtile vec vec128 cublas"}
+IMPLS=${IMPLS:-"cpu_ijk naive_uncoal naive tiled padded tiled_ta padded_ta tile1d tile2d regtile vec vec128 cublas"}
 TILES=${TILES:-"8 16 32"}
 SEED=42
 TMP=$(mktemp -d)

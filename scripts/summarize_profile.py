@@ -31,6 +31,7 @@ SHORT = {
     "smsp__inst_executed_op_shared_st.sum": "shst_inst",
     "dram__bytes_read.sum": "dram_read_bytes",
     "dram__bytes_write.sum": "dram_write_bytes",
+    "smsp__inst_executed.sum": "inst_total",
 }
 NAME = re.compile(r"^(?P<impl>[a-z0-9_]+?)(?:_T(?P<tile>\d+))?_(?P<M>\d+)x(?P<K>\d+)x(?P<N>\d+)\.csv$")
 

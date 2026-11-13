@@ -8,8 +8,8 @@
 #   NS="1024 2048" IMPLS="tiled regtile" bash scripts/edge_sweep.sh
 set -eu
 cd "$(dirname "$0")/.."   # run from the repo root
-NS=${NS:-"1024 4096"}
-IMPLS=${IMPLS:-"naive tiled padded regtile vec vec128 cublas"}
+NS=${NS:-"1024 2048"}   # add 4096 for the large-size edge (slow)
+IMPLS=${IMPLS:-"naive tiled padded tile1d tile2d regtile vec vec128 cublas"}
 TILE=${TILE:-32}
 TRIALS=${TRIALS:-20}
 WARMUP=${WARMUP:-3}

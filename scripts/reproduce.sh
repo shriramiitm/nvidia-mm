@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Reproduce every result in the report from a clean checkout, in one command:
-#   build -> correctness tests -> benchmarks -> edge sweep -> profiling -> tables -> plots
+#   build -> hardware specs -> correctness tests -> benchmarks -> size sweep -> edge sweep
+#   -> profiling -> tables -> plots
 #
 #   bash scripts/reproduce.sh
 #   ARCH=sm_75 SHAPE6="256 16384 256" bash scripts/reproduce.sh
@@ -35,14 +36,22 @@ if [ ! -x ./matmul ] || [ ! -x ./compare ]; then
   echo "build failed; nothing else can run"; exit 1
 fi
 
+step hw_specs sh -c 'python3 scripts/hw_specs.py > results/hw_specs.md && python3 scripts/hw_specs.py --json > results/hw_specs.json'
+cat results/hw_specs.md 2>/dev/null | grep -E 'GPU \||FP32 peak|DRAM bandwidth|Ridge' | sed 's/^/    /'
+
 step tests bash scripts/run_tests.sh
 cp results/logs/tests.txt results/tests.txt
 grep -E '^passed:' results/tests.txt | sed 's/^/    /'
 
 if [ "${SKIP_CPU:-0}" = 1 ]; then
-  step bench env IMPLS="naive tiled padded tiled_ta padded_ta regtile vec vec128 cublas" bash scripts/bench.sh
+  step bench env IMPLS="naive_uncoal naive tiled padded tiled_ta padded_ta tile1d tile2d regtile vec vec128 cublas" bash scripts/bench.sh
 else
   step bench bash scripts/bench.sh
+fi
+if [ "${SKIP_CPU:-0}" = 1 ]; then
+  step sweep env CPU_IMPLS="" bash scripts/sweep.sh
+else
+  step sweep bash scripts/sweep.sh
 fi
 step edge_sweep bash scripts/edge_sweep.sh
 

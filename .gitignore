@@ -1,6 +1,7 @@
 # compiled binaries
 matmul
 compare
+devinfo
 
 # large generated inputs (regenerate with gen.py)
 data/

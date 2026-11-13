@@ -13,8 +13,9 @@
 set -u
 cd "$(dirname "$0")/.."   # run from the repo root
 command -v ncu >/dev/null || { echo "error: ncu (Nsight Compute) not found in PATH"; exit 1; }
-IMPLS=${IMPLS:-"naive tiled padded tiled_ta padded_ta regtile vec vec128 cublas"}
+IMPLS=${IMPLS:-"naive_uncoal naive tiled padded tiled_ta padded_ta tile1d tile2d regtile vec vec128 cublas"}
 TILES=${TILES:-"8 16 32"}
+TA_TILES=${TA_TILES:-"32"}   # tiled_ta / padded_ta experiments: T = 32 shows the 32-way conflict
 SEED=42
 OUT=results/profile
 mkdir -p "$OUT" data
@@ -36,6 +37,7 @@ METRIC_LIST=(
   l1tex__data_pipe_lsu_wavefronts_mem_shared_op_st.sum             # shared store wavefronts
   smsp__inst_executed_op_shared_ld.sum                             # shared load instructions (vectorized?)
   smsp__inst_executed_op_shared_st.sum                             # shared store instructions
+  smsp__inst_executed.sum                                          # all instructions (instruction mix)
   dram__bytes_read.sum
   dram__bytes_write.sum
 )
@@ -47,10 +49,10 @@ for s in "${SHAPES[@]}"; do
   if [ ! -f "$f" ]; then python3 scripts/gen.py "$M" "$K" "$N" "$SEED" "$f"; fi
   for impl in $IMPLS; do
     tiles="16"
-    case "$impl" in tiled|padded|tiled_ta|padded_ta) tiles="$TILES" ;; esac
+    case "$impl" in tiled|padded) tiles="$TILES" ;; tiled_ta|padded_ta) tiles="$TA_TILES" ;; esac
     for t in $tiles; do
       name="${impl}_T${t}_${M}x${K}x${N}"
-      case "$impl" in naive|regtile|vec|vec128|cublas) name="${impl}_${M}x${K}x${N}" ;; esac
+      case "$impl" in naive|naive_uncoal|tile1d|tile2d|regtile|vec|vec128|cublas) name="${impl}_${M}x${K}x${N}" ;; esac
       # our kernels are all named matmul_*; cuBLAS kernel names contain "gemm"
       kfilter="regex:matmul_"; [ "$impl" = cublas ] && kfilter="regex:gemm"
       echo "== profiling $name"

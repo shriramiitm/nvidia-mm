@@ -60,7 +60,7 @@ static double median(std::vector<double> v) {
 
 struct Args {
     std::string impl, input, output;
-    int tile = 32;  // fastest on every benchmarked shape (docs/week2.md section 8)
+    int tile = 32;  // fastest on every benchmarked shape (docs/report.md section 4)
     bool bench = false;
     int trials = 20, warmup = 3, cpu_trials = 3;
 };
@@ -70,9 +70,10 @@ static void usage() {
             "usage: ./matmul --impl {cpu,naive,tiled,padded} --input IN.bin "
             "--output OUT.bin [--tile 8|16|32]\n"
             "       [--bench] [--trials N] [--warmup W] [--cpu-trials C]\n"
-            "       experiments: --impl tiled_ta | padded_ta (transposed A tile, see docs/week3.md)\n"
+            "       experiments: --impl tiled_ta | padded_ta (transposed A tile, see docs/report.md 2.4)\n"
             "       extension:   --impl regtile (register tiling, 4x4 outputs per thread; --tile ignored)\n"
             "       extension:   --impl vec | vec128 (regtile + float4 memory access; 64x64/4x4 or 128x128/8x8)\n"
+            "       ladder:      --impl cpu_ijk | naive_uncoal | tile1d | tile2d (optimization-ladder steps)\n"
             "       reference:   --impl cublas  (cuBLAS SGEMM, external performance reference only)\n");
 }
 
@@ -105,9 +106,10 @@ static Args parse_args(int argc, char** argv) {
     }
     if (a.impl != "cpu" && a.impl != "naive" && a.impl != "tiled" && a.impl != "padded" &&
         a.impl != "tiled_ta" && a.impl != "padded_ta" && a.impl != "regtile" && a.impl != "vec" &&
-        a.impl != "vec128" && a.impl != "cublas") {
+        a.impl != "vec128" && a.impl != "cublas" && a.impl != "cpu_ijk" && a.impl != "naive_uncoal" &&
+        a.impl != "tile1d" && a.impl != "tile2d") {
         usage();
-        die("--impl must be one of cpu, naive, tiled, padded (or tiled_ta, padded_ta, regtile, vec, vec128, cublas)");
+        die("--impl must be one of cpu, naive, tiled, padded (or tiled_ta, padded_ta, regtile, vec, vec128, cublas, cpu_ijk, naive_uncoal, tile1d, tile2d)");
     }
     if (a.input.empty()) { usage(); die("--input is required"); }
     if (a.output.empty() && !a.bench) { usage(); die("--output is required"); }
@@ -161,6 +163,18 @@ static void cpu_matmul(const float* A, const float* B, float* C, int M, int K, i
     }
 }
 
+// CPU, textbook i-j-k order (experiment for the locality comparison only).
+// The inner k loop reads B down a column (stride N floats): a new cache line
+// per multiply-add, and no SIMD. Compare with cpu_matmul (i-k-j).
+static void cpu_matmul_ijk(const float* A, const float* B, float* C, int M, int K, int N) {
+    for (int i = 0; i < M; i++)
+        for (int j = 0; j < N; j++) {
+            float sum = 0.0f;
+            for (int k = 0; k < K; k++) sum += A[(size_t)i * K + k] * B[(size_t)k * N + j];
+            C[(size_t)i * N + j] = sum;
+        }
+}
+
 // V1 (Week 1): naive 
 
 constexpr int NAIVE_BLOCK = 16;
@@ -169,6 +183,22 @@ __global__ void matmul_naive(const float* A, const float* B, float* C, int M, in
     int col = blockIdx.x * blockDim.x + threadIdx.x;
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     if (row < M && col < N) {  // bounds check for arbitrary M, N
+        float acc = 0.0f;
+        for (int k = 0; k < K; k++)
+            acc += A[(size_t)row * K + k] * B[(size_t)k * N + col];
+        C[(size_t)row * N + col] = acc;
+    }
+}
+
+// Step "naive GPU" of the optimization ladder: the same kernel with x and y
+// swapped, so threadIdx.x (fastest inside a warp) walks ROWS. A warp's 16
+// threads then read A at addresses K floats apart and write C N floats apart:
+// one 32-byte sector per thread, uncoalesced. Exists only to measure what
+// coalescing (matmul_naive) buys; same 2D grid / 2D blocks / bounds checks.
+__global__ void matmul_naive_uncoal(const float* A, const float* B, float* C, int M, int K, int N) {
+    int row = blockIdx.x * blockDim.x + threadIdx.x;   // <- swapped
+    int col = blockIdx.y * blockDim.y + threadIdx.y;
+    if (row < M && col < N) {
         float acc = 0.0f;
         for (int k = 0; k < K; k++)
             acc += A[(size_t)row * K + k] * B[(size_t)k * N + col];
@@ -280,6 +310,117 @@ matmul_regtile(const float* __restrict__ A, const float* __restrict__ B, float* 
 #pragma unroll
         for (int j = 0; j < RT_TN; j++) {
             const int col = colBase + tx * RT_TN + j;
+            if (col < N) C[(size_t)row * N + col] = acc[i][j];
+        }
+    }
+}
+
+
+// Step "1D block tiling": each thread computes TM = 8 outputs down one column.
+// Block = 512 threads owns a 64 x 64 tile of C; K step = 8.
+// Per k a thread reads ONE Bs value into a register and reuses it for 8
+// multiply-adds with 8 As values: 9 shared loads for 8 FMAs (tiled: 2 per FMA).
+// As[m][k] reads are the same address for a whole warp (broadcast); Bs[k][n]
+// reads are consecutive. Zero-fill and guarded stores as everywhere else.
+constexpr int T1_BM = 64, T1_BN = 64, T1_BK = 8, T1_TM = 8;
+constexpr int T1_THREADS = (T1_BM / T1_TM) * T1_BN;  // 512
+
+__global__ void __launch_bounds__(T1_THREADS)
+matmul_tile1d(const float* __restrict__ A, const float* __restrict__ B, float* __restrict__ C,
+              int M, int K, int N) {
+    __shared__ float As[T1_BM * T1_BK];  // As[m][k], row-major 64 x 8
+    __shared__ float Bs[T1_BK * T1_BN];  // Bs[k][n], row-major 8 x 64
+
+    const int tid = threadIdx.x;
+    const int tc = tid % T1_BN, tr = tid / T1_BN;  // column 0..63, row group 0..7
+    const int rowBase = blockIdx.y * T1_BM, colBase = blockIdx.x * T1_BN;
+
+    float acc[T1_TM] = {};
+    for (int k0 = 0; k0 < K; k0 += T1_BK) {
+        {   // 64 x 8 = 512 A elements, one per thread: 8 threads read one 32-byte row piece
+            const int r = tid / T1_BK, c = tid % T1_BK;
+            const int gr = rowBase + r, gc = k0 + c;
+            As[r * T1_BK + c] = (gr < M && gc < K) ? A[(size_t)gr * K + gc] : 0.0f;
+        }
+        {   // 8 x 64 = 512 B elements, one per thread: a warp reads 32 consecutive floats
+            const int r = tid / T1_BN, c = tid % T1_BN;
+            const int gr = k0 + r, gc = colBase + c;
+            Bs[r * T1_BN + c] = (gr < K && gc < N) ? B[(size_t)gr * N + gc] : 0.0f;
+        }
+        __syncthreads();
+#pragma unroll
+        for (int k = 0; k < T1_BK; k++) {
+            const float b = Bs[k * T1_BN + tc];  // cached in a register, reused TM times
+#pragma unroll
+            for (int i = 0; i < T1_TM; i++) acc[i] += As[(tr * T1_TM + i) * T1_BK + k] * b;
+        }
+        __syncthreads();
+    }
+    const int col = colBase + tc;
+#pragma unroll
+    for (int i = 0; i < T1_TM; i++) {
+        const int row = rowBase + tr * T1_TM + i;
+        if (row < M && col < N) C[(size_t)row * N + col] = acc[i];
+    }
+}
+
+// Step "2D block tiling": each thread computes TM x TN = 8 x 8 outputs as an
+// outer product. Block = 256 threads owns a 128 x 128 tile of C; K step = 8.
+// Deliberately the plain textbook version: scalar global loads, A tile kept
+// row-major, each thread owns 8 ADJACENT columns. Its shared-memory reads are
+// therefore strided (tc*8 for B, (tr*8+i)*8 for A), which causes bank conflicts;
+// vec128 is the same tiling with float4 access and a conflict-free layout.
+constexpr int T2_BM = 128, T2_BN = 128, T2_BK = 8, T2_TM = 8, T2_TN = 8;
+constexpr int T2_THREADS = (T2_BM / T2_TM) * (T2_BN / T2_TN);  // 256
+
+__global__ void __launch_bounds__(T2_THREADS)
+matmul_tile2d(const float* __restrict__ A, const float* __restrict__ B, float* __restrict__ C,
+              int M, int K, int N) {
+    __shared__ float As[T2_BM * T2_BK];  // As[m][k], 128 x 8
+    __shared__ float Bs[T2_BK * T2_BN];  // Bs[k][n], 8 x 128
+
+    const int tid = threadIdx.x;
+    const int tc = tid % (T2_BN / T2_TN), tr = tid / (T2_BN / T2_TN);  // 16 x 16 threads
+    const int rowBase = blockIdx.y * T2_BM, colBase = blockIdx.x * T2_BN;
+
+    float acc[T2_TM][T2_TN] = {};
+    for (int k0 = 0; k0 < K; k0 += T2_BK) {
+#pragma unroll
+        for (int i = 0; i < (T2_BM * T2_BK) / T2_THREADS; i++) {  // 4 A elements per thread
+            const int e = tid + i * T2_THREADS;
+            const int r = e / T2_BK, c = e % T2_BK;
+            const int gr = rowBase + r, gc = k0 + c;
+            As[r * T2_BK + c] = (gr < M && gc < K) ? A[(size_t)gr * K + gc] : 0.0f;
+        }
+#pragma unroll
+        for (int i = 0; i < (T2_BK * T2_BN) / T2_THREADS; i++) {  // 4 B elements per thread
+            const int e = tid + i * T2_THREADS;
+            const int r = e / T2_BN, c = e % T2_BN;
+            const int gr = k0 + r, gc = colBase + c;
+            Bs[r * T2_BN + c] = (gr < K && gc < N) ? B[(size_t)gr * N + gc] : 0.0f;
+        }
+        __syncthreads();
+#pragma unroll
+        for (int k = 0; k < T2_BK; k++) {
+            float a[T2_TM], b[T2_TN];
+#pragma unroll
+            for (int i = 0; i < T2_TM; i++) a[i] = As[(tr * T2_TM + i) * T2_BK + k];
+#pragma unroll
+            for (int j = 0; j < T2_TN; j++) b[j] = Bs[k * T2_BN + tc * T2_TN + j];
+#pragma unroll
+            for (int i = 0; i < T2_TM; i++)
+#pragma unroll
+                for (int j = 0; j < T2_TN; j++) acc[i][j] += a[i] * b[j];
+        }
+        __syncthreads();
+    }
+#pragma unroll
+    for (int i = 0; i < T2_TM; i++) {
+        const int row = rowBase + tr * T2_TM + i;
+        if (row >= M) continue;
+#pragma unroll
+        for (int j = 0; j < T2_TN; j++) {
+            const int col = colBase + tc * T2_TN + j;
             if (col < N) C[(size_t)row * N + col] = acc[i][j];
         }
     }
@@ -450,6 +591,16 @@ static void launch_kernel(const std::string& impl, int tile, const float* dA, co
         launch_vec<64, 64, 8, 4, 4>(dA, dB, dC, M, K, N);
     } else if (impl == "vec128") {
         launch_vec<128, 128, 8, 8, 8>(dA, dB, dC, M, K, N);
+    } else if (impl == "naive_uncoal") {
+        dim3 block(NAIVE_BLOCK, NAIVE_BLOCK);
+        dim3 grid((M + block.x - 1) / block.x, (N + block.y - 1) / block.y);  // x covers rows
+        matmul_naive_uncoal<<<grid, block>>>(dA, dB, dC, M, K, N);
+    } else if (impl == "tile1d") {
+        dim3 grid((N + T1_BN - 1) / T1_BN, (M + T1_BM - 1) / T1_BM);
+        matmul_tile1d<<<grid, T1_THREADS>>>(dA, dB, dC, M, K, N);
+    } else if (impl == "tile2d") {
+        dim3 grid((N + T2_BN - 1) / T2_BN, (M + T2_BM - 1) / T2_BM);
+        matmul_tile2d<<<grid, T2_THREADS>>>(dA, dB, dC, M, K, N);
     } else {
         die("implementation '%s' has no GPU kernel", impl.c_str());
     }
@@ -467,9 +618,12 @@ static GpuRunTimes gpu_run(const std::string& impl, int tile, const float* hA, c
     const size_t bytesB = (size_t)K * N * sizeof(float);
     const size_t bytesC = (size_t)M * N * sizeof(float);
 
-    const int blockY = (impl == "regtile" || impl == "vec") ? 64 : (impl == "vec128") ? 128
+    const int blockY = (impl == "regtile" || impl == "vec" || impl == "tile1d") ? 64
+                     : (impl == "vec128" || impl == "tile2d")                  ? 128
                      : is_tiled(impl) ? tile : NAIVE_BLOCK;
-    if ((M + blockY - 1) / blockY > 65535) die("M=%d is too large for this launch configuration", M);
+    const int gridYDim = (impl == "naive_uncoal") ? N : M;  // naive_uncoal puts columns on grid y
+    if ((gridYDim + blockY - 1) / blockY > 65535)
+        die("M=%d N=%d is too large for this launch configuration", M, N);
 
     double t0 = now_ms();
 
@@ -526,12 +680,13 @@ int main(int argc, char** argv) {
     double kernel_ms = 0, e2e_ms = 0;
     int trials_used = 1;
 
-    if (a.impl == "cpu") {
+    if (a.impl == "cpu" || a.impl == "cpu_ijk") {
         trials_used = a.bench ? a.cpu_trials : 1;
         std::vector<double> t;
         for (int i = 0; i < trials_used; i++) {
             double t0 = now_ms();
-            cpu_matmul(p.A.data(), p.B.data(), C.data(), M, K, N);
+            if (a.impl == "cpu") cpu_matmul(p.A.data(), p.B.data(), C.data(), M, K, N);
+            else                 cpu_matmul_ijk(p.A.data(), p.B.data(), C.data(), M, K, N);
             t.push_back(now_ms() - t0);
         }
         kernel_ms = e2e_ms = median(t);  // CPU: multiplication only, no transfers
@@ -561,8 +716,8 @@ int main(int argc, char** argv) {
     const double kernel_gflops = flops / (kernel_ms * 1e6);
     const double e2e_gflops = flops / (e2e_ms * 1e6);
     const std::string tileStr = is_tiled(a.impl)                         ? std::to_string(a.tile)
-                                : (a.impl == "regtile" || a.impl == "vec") ? "64x64"
-                                : (a.impl == "vec128")                     ? "128x128"
+                                : (a.impl == "regtile" || a.impl == "vec" || a.impl == "tile1d") ? "64x64"
+                                : (a.impl == "vec128" || a.impl == "tile2d")                     ? "128x128"
                                                                            : "NA";
     if (a.bench) {
         // impl,M,K,N,tile,trials,kernel_ms,e2e_ms,kernel_gflops,e2e_gflops

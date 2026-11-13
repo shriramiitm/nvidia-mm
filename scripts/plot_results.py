@@ -18,6 +18,7 @@ from html import escape
 
 # Validated categorical slots in fixed order (light surface): blue, orange, aqua, yellow, magenta.
 S1, S2, S3, S4, S5 = "#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4"
+S6, S7, S8 = "#008300", "#6250d6", "#e34948"  # palette slots 6-8 (fixed order, validated adjacent)
 SEQ = ["#9cc3ef", "#4f93e0", "#1d5aa6"]  # one hue, light -> dark (ordinal: tile 8 / 16 / 32)
 SURFACE, INK, INK2, MUTED, GRID = "#fcfcfb", "#0b0b0b", "#52514e", "#8a8984", "#e6e5e1"
 FONT = "font-family='Helvetica, Arial, sans-serif'"
@@ -120,6 +121,123 @@ def grouped_bars(path, title, subtitle, groups, series, values, unit, fmt="{:.0f
             svg.text(x + bw / 2, y(val) - 4, fmt.format(val), 9, INK2, "middle")
         svg.text(L + gi * gw + gw / 2, H - B + 18, g, 11, INK2, "middle")
     svg.raw(f"<line x1='{L}' x2='{W - R}' y1='{y(0):.1f}' y2='{y(0):.1f}' stroke='{MUTED}' stroke-width='1'/>")
+    svg.save(path)
+
+
+# The optimization ladder, in presentation order: (step label, impl, tile column, colour).
+LADDER = [("CPU, i-j-k", "cpu_ijk", "NA", MUTED), ("CPU, i-k-j", "cpu", "NA", MUTED),
+          ("Naive GPU (uncoalesced)", "naive_uncoal", "NA", S1), ("Global-memory coalesced", "naive", "NA", S2),
+          ("Shared memory (T=32)", "tiled", "32", S3), ("Shared + padding (T=32)", "padded", "32", S4),
+          ("1D block tiling (8×1)", "tile1d", "64x64", S5), ("2D block tiling (8×8)", "tile2d", "128x128", S6),
+          ("Vectorized (float4, 8×8)", "vec128", "128x128", S7), ("cuBLAS (reference)", "cublas", "NA", S8)]
+
+
+def ladder_table(t, shape, out_md):
+    """Markdown table in the style of the reference post: cumulative, one row per step."""
+    M, K, N = shape
+    fl, by = 2.0 * M * N * K, 4.0 * (M * K + K * N + M * N)
+    base = t.get(("naive_uncoal", "NA", shape)) or t.get(("naive", "NA", shape))
+    cub = t.get(("cublas", "NA", shape))
+    lines = [f"Kernel-only, median of 20, {M}×{K}×{N}. Bandwidth = (A + B + C bytes) / time (effective).", "",
+             "| Step | Kernel | Time (ms) | TFLOPS | Bandwidth (GB/s) | vs cuBLAS | Speedup over naive | Speedup over previous step |",
+             "|---|---|---|---|---|---|---|---|"]
+    prev = None
+    for i, (name, impl, tile, _) in enumerate(LADDER):
+        r = t.get((impl, tile, shape))
+        if not r:
+            continue
+        ms = r["kernel_ms"]
+        step = "–" if impl.startswith("cpu") or impl == "cublas" else str(i - 1)
+        vs = f"{100 * cub['kernel_ms'] / ms:.1f}%" if cub else "–"
+        sp = f"{base['kernel_ms'] / ms:.1f}×" if base else "–"
+        sprev = f"{prev / ms:.2f}×" if prev and not impl.startswith("cpu") and impl != "cublas" and impl != "padded" else "–"
+        lines.append(f"| {step} | {name} | {ms:.4g} | {fl / ms / 1e9:.3g} | {by / ms / 1e6:.3g} | {vs} | {sp} | {sprev} |")
+        if not impl.startswith("cpu") and impl not in ("cublas", "padded"):
+            prev = ms
+    open(out_md, "w").write("\n".join(lines) + "\n")
+
+
+def line_chart(path, title, subtitle, sizes, series):
+    """series: [(label, colour, {size: GFLOP/s})]. x = matrix size (log2), y = TFLOP/s."""
+    W, H, L, R, T, B = 800, 420, 64, 190, 92, 56
+    svg = Svg(W, H, title, subtitle)
+    ymax_v = max(v for _, _, d in series for v in d.values()) / 1000
+    ymax, ys = nice_max(ymax_v * 1.1)
+    pw, ph = W - L - R, H - T - B
+    xs = sorted(sizes)
+    X = lambda n: L + (xs.index(n) / max(1, len(xs) - 1)) * pw
+    Y = lambda v: T + ph - v / ymax * ph
+    v = 0
+    while v <= ymax + 1e-9:
+        svg.raw(f"<line x1='{L}' x2='{L + pw}' y1='{Y(v):.1f}' y2='{Y(v):.1f}' stroke='{GRID}'/>")
+        svg.text(L - 8, Y(v) + 4, f"{v:g}", 10, MUTED, "end")
+        v += ys
+    for n in xs:
+        svg.text(X(n), H - B + 16, str(n), 10, MUTED, "middle")
+    svg.text(L + pw / 2, H - 14, "matrix size n (M = N = K = n)", 11, INK2, "middle")
+    svg.text(16, T + ph / 2, "TFLOP/s (kernel-only)", 11, INK2, "middle", rotate=-90)
+    svg.raw(f"<line x1='{L}' x2='{L + pw}' y1='{Y(0):.1f}' y2='{Y(0):.1f}' stroke='{MUTED}'/>")
+    ends = []
+    for name, color, d in series:
+        pts = [(X(n), Y(d[n] / 1000), n, d[n]) for n in xs if n in d]
+        if not pts:
+            continue
+        svg.raw(f"<polyline fill='none' stroke='{color}' stroke-width='2' points='"
+                + " ".join(f"{x:.1f},{y:.1f}" for x, y, _, _ in pts) + "'/>")
+        for x, y, n, g in pts:
+            svg.raw(f"<circle cx='{x:.1f}' cy='{y:.1f}' r='4' fill='{color}' stroke='{SURFACE}' stroke-width='2'>"
+                    f"<title>{escape(name)}, n = {n}: {g / 1000:.3g} TFLOP/s</title></circle>")
+        ends.append([pts[-1][1], name, color])
+    ends.sort()  # direct labels at the right end, nudged apart
+    for i in range(1, len(ends)):
+        ends[i][0] = max(ends[i][0], ends[i - 1][0] + 13)
+    for y, name, color in ends:
+        svg.raw(f"<rect x='{L + pw + 22}' y='{y - 5:.1f}' width='8' height='8' rx='2' fill='{color}'/>")
+        svg.text(L + pw + 34, y + 3, name, 10, INK2)
+    svg.save(path)
+
+
+def roofline(path, hw, prof_rows, bench, shape_m="1024"):
+    """Log-log roofline: x = FLOP per DRAM byte (Nsight), y = achieved GFLOP/s (benchmark)."""
+    peak, bw = hw["fp32_peak_tflops"] * 1000, hw["dram_bw_gbs"]  # GFLOP/s, GB/s
+    W, H, L, R, T, B = 760, 440, 70, 24, 92, 56
+    svg = Svg(W, H, f"Roofline: {hw.get('name', 'GPU')} (FP32 {peak / 1000:.2f} TFLOP/s, DRAM {bw:.0f} GB/s)",
+              "Arithmetic intensity from Nsight DRAM bytes at 1024³; achieved throughput from the benchmark. Peak at boost clock.")
+    import math
+    x0, x1, y0, y1 = -1, 3, 1, math.log10(peak * 2)  # log10 ranges: 0.1..1000 FLOP/B, 10..2*peak GFLOP/s
+    pw, ph = W - L - R, H - T - B
+    X = lambda a: L + (math.log10(a) - x0) / (x1 - x0) * pw
+    Y = lambda g: T + ph - (math.log10(g) - y0) / (y1 - y0) * ph
+    for e in range(x0, x1 + 1):
+        svg.raw(f"<line x1='{X(10 ** e):.1f}' x2='{X(10 ** e):.1f}' y1='{T}' y2='{T + ph}' stroke='{GRID}'/>")
+        svg.text(X(10 ** e), H - B + 16, f"{10 ** e:g}", 10, MUTED, "middle")
+    for e in range(int(y0), int(y1) + 1):
+        if 10 ** e <= peak * 2:
+            svg.raw(f"<line x1='{L}' x2='{L + pw}' y1='{Y(10 ** e):.1f}' y2='{Y(10 ** e):.1f}' stroke='{GRID}'/>")
+            svg.text(L - 8, Y(10 ** e) + 4, f"{10 ** e:g}", 10, MUTED, "end")
+    svg.text(L + pw / 2, H - 14, "arithmetic intensity (FLOP per DRAM byte, log scale)", 11, INK2, "middle")
+    svg.text(16, T + ph / 2, "GFLOP/s (log scale)", 11, INK2, "middle", rotate=-90)
+    ridge = peak / bw
+    pts = [(10 ** x0, bw * 10 ** x0), (ridge, peak), (10 ** x1, peak)]
+    svg.raw(f"<polyline fill='none' stroke='{INK2}' stroke-width='2' points='"
+            + " ".join(f"{X(a):.1f},{Y(g):.1f}" for a, g in pts) + "'/>")
+    svg.text(X(ridge) + 6, Y(peak) - 6, f"ridge {ridge:.0f} FLOP/B", 10, INK2)
+    svg.text(X(10 ** x0 * 1.3), Y(bw * 10 ** x0 * 1.3) - 8, "memory-bound", 10, INK2)
+    svg.text(X(10 ** x1) - 4, Y(peak) - 6, "compute-bound", 10, INK2, "end")
+    for name, impl, tile, color in LADDER:
+        if impl.startswith("cpu"):
+            continue
+        r = next((p for p in prof_rows if p["impl"] == impl and p["M"] == shape_m
+                  and (p["tile"] == tile or tile not in ("32",))), None)
+        b = bench.get((impl, tile, (1024, 1024, 1024)))
+        if not r or not b or not r.get("dram_read_bytes"):
+            continue
+        n = 1024
+        ai = 2.0 * n ** 3 / (int(r["dram_read_bytes"]) + int(r["dram_write_bytes"] or 0))
+        g = b["kernel_gflops"]
+        svg.raw(f"<circle cx='{X(ai):.1f}' cy='{Y(g):.1f}' r='5' fill='{color}' stroke='{SURFACE}' stroke-width='2'>"
+                f"<title>{escape(name)}: {ai:.0f} FLOP/B, {g:.0f} GFLOP/s</title></circle>")
+        svg.text(X(ai) + 8, Y(g) + 4, name.split(" (")[0], 10, INK2)
     svg.save(path)
 
 
@@ -230,6 +348,72 @@ def main():
     if prof:
         plot_wavefronts(prof, os.path.join(out, "time_vs_wavefronts.svg"))
         written.append("time_vs_wavefronts.svg")
+
+    # 8. The optimization ladder (reference-post style)
+    if t and (4096, 4096, 4096) in shapes:
+        ladder_table(t, (4096, 4096, 4096), os.path.join(root, "ladder_4096.md"))
+        vals = {}
+        used = []
+        for name, impl, tile, color in LADDER:
+            r = t.get((impl, tile, (4096, 4096, 4096)))
+            if r:
+                vals[(name, "TFLOP/s")] = r["kernel_gflops"] / 1000
+                used.append(name)
+        if used:
+            W = 760
+            grouped_bars(os.path.join(out, "ladder_4096.svg"), "Optimization ladder at 4096³",
+                         "Kernel-only TFLOP/s for each step, left to right in the order presented.",
+                         used, [("TFLOP/s", S1)], vals, "TFLOP/s", "{:.2f}")
+            written.append("ladder_4096.svg")
+
+    # 9. Performance across matrix sizes, one chart per step (previous step, this step, cuBLAS)
+    sw, sizes_sq = load(os.path.join(root, "sweep.csv"))
+    if sw and t:  # add the 4096³ benchmark points (bench.sh) so the curves reach the largest size
+        for (impl, tile, sh), r in t.items():
+            if sh == (4096, 4096, 4096) and not impl.startswith("cpu") and (impl, tile, sh) not in sw:
+                sw[(impl, tile, sh)] = r
+                if sh not in sizes_sq:
+                    sizes_sq.append(sh)
+    if sw:
+        ns = sorted({s[0] for s in sizes_sq})
+        def curve(impl, tile):
+            return {s[0]: sw[(impl, tile, s)]["kernel_gflops"] for s in sizes_sq if (impl, tile, s) in sw}
+        gpu = [l for l in LADDER if not l[1].startswith("cpu") and l[1] != "cublas"]
+        cub = curve("cublas", "NA")
+        for i, (name, impl, tile, color) in enumerate(gpu):
+            series = []
+            if i > 0 and impl != "padded":
+                prev = gpu[i - 1] if gpu[i - 1][1] != "padded" else gpu[i - 2]
+                series.append((prev[0], MUTED, curve(prev[1], prev[2])))
+            elif impl == "padded":
+                series.append((gpu[i - 1][0], MUTED, curve(gpu[i - 1][1], gpu[i - 1][2])))
+            series.append((name, color, curve(impl, tile)))
+            if cub:
+                series.append(("cuBLAS", S8, cub))
+            if series[-2 if cub else -1][2]:
+                line_chart(os.path.join(out, f"sweep_{i + 1}_{impl}.svg"), f"Step: {name}",
+                           "TFLOP/s across matrix sizes, compared with the previous step and cuBLAS.", ns, series)
+                written.append(f"sweep_{i + 1}_{impl}.svg")
+        allc = [(name, color, curve(impl, tile)) for name, impl, tile, color in LADDER if not impl.startswith("cpu")]
+        line_chart(os.path.join(out, "sweep_all.svg"), "Performance across matrix sizes: every step",
+                   "Kernel-only TFLOP/s, median of 20, square matrices.", ns, [c for c in allc if c[2]])
+        written.append("sweep_all.svg")
+        cpu = [(name, c, curve(impl, tile)) for name, impl, tile, c in LADDER[:2]]
+        cpu = [(n, S1 if i == 0 else S2, d) for i, (n, c, d) in enumerate(cpu) if d]
+        if cpu:
+            line_chart(os.path.join(out, "sweep_cpu.svg"), "CPU loop order: i-j-k vs i-k-j",
+                       "Single thread, GFLOP/s shown as TFLOP/s; same arithmetic, different memory order.",
+                       sorted({n for _, _, d in cpu for n in d}), cpu)
+            written.append("sweep_cpu.svg")
+
+    # 10. Roofline
+    hwj = os.path.join(root, "hw_specs.json")
+    if os.path.exists(hwj) and os.path.exists(ps) and t:
+        import json
+        hw = json.load(open(hwj))
+        if hw.get("fp32_peak_tflops"):
+            roofline(os.path.join(out, "roofline.svg"), hw, list(csv.DictReader(open(ps))), t)
+            written.append("roofline.svg")
 
     print(f"wrote {out}/: " + " ".join(written))
 

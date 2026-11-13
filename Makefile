@@ -5,10 +5,13 @@ ARCH     ?= native
 NVFLAGS  = -O3 -std=c++14 -arch=$(ARCH) -lineinfo   # -lineinfo: profiler maps metrics to source lines
 CXXFLAGS = -O2 -std=c++14 -Wall -Wextra
 
-all: matmul compare
+all: matmul compare devinfo
 
 matmul: src/matmul.cu
 	$(NVCC) $(NVFLAGS) -o $@ $< -lcublas   # cuBLAS only for the reference (--impl cublas)
+
+devinfo: src/devinfo.cu
+	$(NVCC) -O2 -std=c++14 -arch=$(ARCH) -o $@ $<
 
 compare: src/compare.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $<
@@ -20,7 +23,7 @@ bench: all
 	bash scripts/bench.sh
 
 clean:
-	rm -f matmul compare
+	rm -f matmul compare devinfo
 
 .PHONY: all test bench profile reproduce clean
 

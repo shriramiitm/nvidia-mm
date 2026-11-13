@@ -1,0 +1,142 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='820' height='330' viewBox='0 0 820 330'>
+<defs><marker id='arr' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='7' markerHeight='7' orient='auto'><path d='M0,0 L10,5 L0,10 z' fill='#8a8984'/></marker></defs>
+<rect width='100%' height='100%' fill='#fcfcfb'/>
+<text x='20.0' y='28.0' font-family='Helvetica, Arial, sans-serif' font-size='15' fill='#0b0b0b' text-anchor='start' font-weight='600'>Global-memory access of one warp (32 threads), one load instruction</text>
+<text x='20.0' y='48.0' font-family='Helvetica, Arial, sans-serif' font-size='12' fill='#52514e' text-anchor='start' font-weight='400'>Squares = consecutive floats of one matrix row; brackets = 32-byte sectors fetched; colour = bytes actually used.</text>
+<text x='20.0' y='94.0' font-family='Helvetica, Arial, sans-serif' font-size='12' fill='#0b0b0b' text-anchor='start' font-weight='600'>tiled: A or B row</text>
+<rect x='200.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#2a78d6' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='214.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#2a78d6' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='228.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#2a78d6' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='242.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#2a78d6' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='256.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#2a78d6' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='270.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#2a78d6' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='284.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#2a78d6' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='298.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#2a78d6' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='312.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#2a78d6' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='326.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#2a78d6' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='340.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#2a78d6' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='354.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#2a78d6' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='368.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#2a78d6' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='382.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#2a78d6' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='396.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#2a78d6' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='410.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#2a78d6' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='424.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#2a78d6' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='438.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#2a78d6' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='452.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#2a78d6' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='466.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#2a78d6' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='480.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#2a78d6' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='494.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#2a78d6' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='508.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#2a78d6' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='522.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#2a78d6' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='536.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#2a78d6' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='550.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#2a78d6' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='564.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#2a78d6' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='578.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#2a78d6' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='592.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#2a78d6' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='606.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#2a78d6' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='620.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#2a78d6' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='634.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#2a78d6' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='648.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='662.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='676.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='690.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='704.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='718.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='732.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='746.0' y='80.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<line x1='200.0' y1='104.0' x2='311.0' y2='104.0' stroke='#2a78d6' stroke-width='2.5'/>
+<line x1='312.0' y1='104.0' x2='423.0' y2='104.0' stroke='#2a78d6' stroke-width='2.5'/>
+<line x1='424.0' y1='104.0' x2='535.0' y2='104.0' stroke='#2a78d6' stroke-width='2.5'/>
+<line x1='536.0' y1='104.0' x2='647.0' y2='104.0' stroke='#2a78d6' stroke-width='2.5'/>
+<text x='200.0' y='122.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='start' font-weight='400'>32 neighbouring floats (tx = 0..31) → 4 full sectors, 100% of fetched bytes used (measured 100%)</text>
+<text x='20.0' y='164.0' font-family='Helvetica, Arial, sans-serif' font-size='12' fill='#0b0b0b' text-anchor='start' font-weight='600'>naive: B row</text>
+<rect x='200.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#eb6834' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='214.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#eb6834' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='228.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#eb6834' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='242.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#eb6834' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='256.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#eb6834' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='270.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#eb6834' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='284.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#eb6834' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='298.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#eb6834' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='312.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#eb6834' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='326.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#eb6834' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='340.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#eb6834' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='354.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#eb6834' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='368.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#eb6834' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='382.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#eb6834' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='396.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#eb6834' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='410.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#eb6834' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='424.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='438.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='452.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='466.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='480.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='494.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='508.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='522.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='536.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='550.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='564.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='578.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='592.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='606.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='620.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='634.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='648.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='662.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='676.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='690.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='704.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='718.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='732.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='746.0' y='150.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<line x1='200.0' y1='174.0' x2='311.0' y2='174.0' stroke='#eb6834' stroke-width='2.5'/>
+<line x1='312.0' y1='174.0' x2='423.0' y2='174.0' stroke='#eb6834' stroke-width='2.5'/>
+<text x='200.0' y='192.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='start' font-weight='400'>warp = 16 × 2 threads; both thread rows read the same 16 floats → 2 full sectors</text>
+<text x='20.0' y='234.0' font-family='Helvetica, Arial, sans-serif' font-size='12' fill='#0b0b0b' text-anchor='start' font-weight='600'>naive: A</text>
+<rect x='200.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#eb6834' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='214.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='228.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='242.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='256.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='270.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='284.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='298.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='312.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='326.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='340.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='354.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='368.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='382.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='396.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='410.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='424.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='438.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='452.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='466.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='480.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='494.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='508.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='522.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='536.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='550.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='564.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='578.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='592.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='606.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='620.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='634.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='648.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='662.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#eb6834' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='676.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='690.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='704.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='718.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='732.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<rect x='746.0' y='220.0' width='13.0' height='18.0' rx='0' fill='#f1f0ec' fill-opacity='1' stroke='#c9c8c2' stroke-width='0.5'/>
+<line x1='200.0' y1='244.0' x2='311.0' y2='244.0' stroke='#eb6834' stroke-width='2.5'/>
+<line x1='648.0' y1='244.0' x2='759.0' y2='244.0' stroke='#eb6834' stroke-width='2.5'/>
+<text x='200.0' y='262.0' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e' text-anchor='start' font-weight='400'>2 thread rows read 2 different A rows (1 float each, broadcast) → 2 sectors for 8 useful bytes</text>
+<text x='20.0' y='300.0' font-family='Helvetica, Arial, sans-serif' font-size='12' fill='#0b0b0b' text-anchor='start' font-weight='400'>naive efficiency = (64 + 8) bytes used / (64 + 64) fetched = 56.25%  — exactly the value Nsight Compute reports</text>
+<text x='20.0' y='318.0' font-family='Helvetica, Arial, sans-serif' font-size='12' fill='#52514e' text-anchor='start' font-weight='400'>If threadIdx.x mapped to rows instead, every thread would hit its own sector: 4 of 32 bytes used (12.5%).</text>
+</svg>
