@@ -7,7 +7,7 @@
 #   TILES="8 16 32" bash scripts/run_tests.sh           # tile sizes for tiled/padded
 set -u
 cd "$(dirname "$0")/.."   # run from the repo root
-IMPLS=${IMPLS:-"naive tiled padded tiled_ta padded_ta regtile"}
+IMPLS=${IMPLS:-"naive tiled padded tiled_ta padded_ta regtile vec vec128 cublas"}
 TILES=${TILES:-"8 16 32"}
 SEED=42
 TMP=$(mktemp -d)
@@ -30,6 +30,8 @@ SHAPES=(
   "1 1 1"
   "1000 513 769"  # irregular
   "65 63 129"     # one more / less than the 64x64 regtile block; K not a multiple of 8
+  "130 132 260"   # K, N multiples of 4 (float4 path) but not of the 64/128 blocks
+  "129 64 130"    # K aligned, N not: vec loads A with float4 and B/C element by element
 )
 
 pass=0

@@ -8,7 +8,7 @@ CXXFLAGS = -O2 -std=c++14 -Wall -Wextra
 all: matmul compare
 
 matmul: src/matmul.cu
-	$(NVCC) $(NVFLAGS) -o $@ $<
+	$(NVCC) $(NVFLAGS) -o $@ $< -lcublas   # cuBLAS only for the reference (--impl cublas)
 
 compare: src/compare.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $<
@@ -22,7 +22,10 @@ bench: all
 clean:
 	rm -f matmul compare
 
-.PHONY: all test bench profile clean
+.PHONY: all test bench profile reproduce clean
 
 profile: all
 	bash scripts/profile.sh
+
+reproduce:
+	bash scripts/reproduce.sh

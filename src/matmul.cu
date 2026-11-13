@@ -1,4 +1,5 @@
 
+#include <cublas_v2.h>
 #include <cuda_runtime.h>
 
 #include <algorithm>
@@ -20,6 +21,17 @@
         if (err_ != cudaSuccess) {                                            \
             fprintf(stderr, "CUDA error: %s (%s:%d)\n",                       \
                     cudaGetErrorString(err_), __FILE__, __LINE__);            \
+            exit(EXIT_FAILURE);                                               \
+        }                                                                     \
+    } while (0)
+
+// cuBLAS calls return their own status type.
+#define CUBLAS_CHECK(call)                                                    \
+    do {                                                                      \
+        cublasStatus_t st_ = (call);                                          \
+        if (st_ != CUBLAS_STATUS_SUCCESS) {                                   \
+            fprintf(stderr, "cuBLAS error: status %d (%s:%d)\n", (int)st_,     \
+                    __FILE__, __LINE__);                                      \
             exit(EXIT_FAILURE);                                               \
         }                                                                     \
     } while (0)
@@ -59,7 +71,9 @@ static void usage() {
             "--output OUT.bin [--tile 8|16|32]\n"
             "       [--bench] [--trials N] [--warmup W] [--cpu-trials C]\n"
             "       experiments: --impl tiled_ta | padded_ta (transposed A tile, see docs/week3.md)\n"
-            "       extension:   --impl regtile (register tiling, 4x4 outputs per thread; --tile ignored)\n");
+            "       extension:   --impl regtile (register tiling, 4x4 outputs per thread; --tile ignored)\n"
+            "       extension:   --impl vec | vec128 (regtile + float4 memory access; 64x64/4x4 or 128x128/8x8)\n"
+            "       reference:   --impl cublas  (cuBLAS SGEMM, external performance reference only)\n");
 }
 
 static int parse_int(const char* s, const char* name) {
@@ -90,9 +104,10 @@ static Args parse_args(int argc, char** argv) {
         else { usage(); die("unknown argument '%s'", k.c_str()); }
     }
     if (a.impl != "cpu" && a.impl != "naive" && a.impl != "tiled" && a.impl != "padded" &&
-        a.impl != "tiled_ta" && a.impl != "padded_ta" && a.impl != "regtile") {
+        a.impl != "tiled_ta" && a.impl != "padded_ta" && a.impl != "regtile" && a.impl != "vec" &&
+        a.impl != "vec128" && a.impl != "cublas") {
         usage();
-        die("--impl must be one of cpu, naive, tiled, padded (or tiled_ta, padded_ta, regtile)");
+        die("--impl must be one of cpu, naive, tiled, padded (or tiled_ta, padded_ta, regtile, vec, vec128, cublas)");
     }
     if (a.input.empty()) { usage(); die("--input is required"); }
     if (a.output.empty() && !a.bench) { usage(); die("--output is required"); }
@@ -270,8 +285,165 @@ matmul_regtile(const float* __restrict__ A, const float* __restrict__ B, float* 
     }
 }
 
+// ---- V6 (extension): register tiling + vectorized (float4) memory access -----
+// Starts from regtile and makes every memory access 128-bit wide where legal:
+//   global loads of A and B, the shared-memory store of B, the shared-memory
+//   reads of A and B, and the global store of C.
+// Two instantiations:
+//   vec     BM = BN = 64,  TM = TN = 4  (same tiling as regtile: vectorization is
+//           the ONLY difference, so it measures what float4 access alone buys)
+//   vec128  BM = BN = 128, TM = TN = 8  (bigger block and per-thread tile, the
+//           usual configuration of this kernel design; changes two things at once)
+// Both use 256 threads and BK = 8.
+//
+// Correctness for any M, N, K (the usual float4 kernel assumes multiples of the tile):
+//   * a float4 global load/store needs a 16-byte-aligned address. Row r of A
+//     starts at r*K floats, so A rows are aligned only when K % 4 == 0; B and C
+//     rows only when N % 4 == 0. Otherwise every access takes the scalar path.
+//   * a float4 is used only when all 4 elements are inside the matrix; edge
+//     elements are loaded one by one with zero fill, and C stores are guarded.
+//   * C is written, never read (no beta * C term: C = A * B, and the output
+//     buffer is uninitialised).
+// Shared-memory layout: As is transposed (As[k][m]) with its row padded by 4
+// floats, which keeps rows 16-byte aligned for float4 reads and makes the
+// transposed scalar stores conflict-free (same reasoning as regtile).
+// For TN = 8, a thread's 8 columns are two groups of 4, BN/2 apart (cols
+// tx*4..+3 and BN/2+tx*4..+3), not 8 adjacent ones: adjacent 8-float chunks
+// would put the float4 reads of a quarter-warp 32 bytes apart, a 2-way bank
+// conflict. Rows are split the same way for TM = 8.
+template <int BM, int BN, int BK, int TM, int TN>
+__global__ void __launch_bounds__((BM / TM) * (BN / TN))
+matmul_vec(const float* __restrict__ A, const float* __restrict__ B, float* __restrict__ C, int M, int K, int N) {
+    constexpr int NT = (BM / TM) * (BN / TN);  // threads per block
+    constexpr int PAD = 4;
+    constexpr int GM = TM / 4, GN = TN / 4;    // float4 groups per thread
+    constexpr int A4 = BM * BK / 4, B4 = BK * BN / 4;  // float4 slots per tile
+    static_assert(TM % 4 == 0 && TN % 4 == 0 && BK % 4 == 0, "tiles must be multiples of 4");
+    static_assert(A4 % 32 == 0, "keeps the A/B split of the load loop warp-uniform");
+
+    __shared__ __align__(16) float As[BK][BM + PAD];  // transposed: As[k][m]
+    __shared__ __align__(16) float Bs[BK][BN];
+
+    const int tid = threadIdx.x;
+    const int tx = tid % (BN / TN), ty = tid / (BN / TN);
+    const int rowBase = blockIdx.y * BM, colBase = blockIdx.x * BN;
+    const bool alignA = (K & 3) == 0;  // every A row starts on a 16-byte boundary
+    const bool alignB = (N & 3) == 0;  // every B row and C row does
+
+    float acc[TM][TN] = {};
+
+    for (int k0 = 0; k0 < K; k0 += BK) {
+        // One loop over all float4 slots of both tiles, so all 256 threads load.
+        for (int e = tid; e < A4 + B4; e += NT) {
+            if (e < A4) {
+                const int r = e / (BK / 4), c = (e % (BK / 4)) * 4;  // tile row, first of 4 k's
+                const int gr = rowBase + r, gc = k0 + c;
+                float4 v;
+                if (alignA && gr < M && gc + 3 < K) {
+                    v = *reinterpret_cast<const float4*>(&A[(size_t)gr * K + gc]);
+                } else {
+                    const bool rowOk = gr < M;
+                    v.x = (rowOk && gc + 0 < K) ? A[(size_t)gr * K + gc + 0] : 0.0f;
+                    v.y = (rowOk && gc + 1 < K) ? A[(size_t)gr * K + gc + 1] : 0.0f;
+                    v.z = (rowOk && gc + 2 < K) ? A[(size_t)gr * K + gc + 2] : 0.0f;
+                    v.w = (rowOk && gc + 3 < K) ? A[(size_t)gr * K + gc + 3] : 0.0f;
+                }
+                As[c + 0][r] = v.x;  // transposed: 4 scalar stores
+                As[c + 1][r] = v.y;
+                As[c + 2][r] = v.z;
+                As[c + 3][r] = v.w;
+            } else {
+                const int f = e - A4;
+                const int r = f / (BN / 4), c = (f % (BN / 4)) * 4;
+                const int gr = k0 + r, gc = colBase + c;
+                float4 v;
+                if (alignB && gr < K && gc + 3 < N) {
+                    v = *reinterpret_cast<const float4*>(&B[(size_t)gr * N + gc]);
+                } else {
+                    const bool rowOk = gr < K;
+                    v.x = (rowOk && gc + 0 < N) ? B[(size_t)gr * N + gc + 0] : 0.0f;
+                    v.y = (rowOk && gc + 1 < N) ? B[(size_t)gr * N + gc + 1] : 0.0f;
+                    v.z = (rowOk && gc + 2 < N) ? B[(size_t)gr * N + gc + 2] : 0.0f;
+                    v.w = (rowOk && gc + 3 < N) ? B[(size_t)gr * N + gc + 3] : 0.0f;
+                }
+                *reinterpret_cast<float4*>(&Bs[r][c]) = v;  // one 128-bit store
+            }
+        }
+        __syncthreads();
+
+#pragma unroll
+        for (int k = 0; k < BK; k++) {
+            float a[TM], b[TN];
+#pragma unroll
+            for (int g = 0; g < GM; g++) {
+                const float4 t = *reinterpret_cast<const float4*>(&As[k][g * (BM / GM) + ty * 4]);
+                a[g * 4 + 0] = t.x; a[g * 4 + 1] = t.y; a[g * 4 + 2] = t.z; a[g * 4 + 3] = t.w;
+            }
+#pragma unroll
+            for (int g = 0; g < GN; g++) {
+                const float4 t = *reinterpret_cast<const float4*>(&Bs[k][g * (BN / GN) + tx * 4]);
+                b[g * 4 + 0] = t.x; b[g * 4 + 1] = t.y; b[g * 4 + 2] = t.z; b[g * 4 + 3] = t.w;
+            }
+#pragma unroll
+            for (int i = 0; i < TM; i++)
+#pragma unroll
+                for (int j = 0; j < TN; j++) acc[i][j] += a[i] * b[j];
+        }
+        __syncthreads();
+    }
+
+    // acc[gi*4 + i][gj*4 + j] belongs to row  rowBase + gi*(BM/GM) + ty*4 + i,
+    //                                  col  colBase + gj*(BN/GN) + tx*4 + j.
+#pragma unroll
+    for (int gi = 0; gi < GM; gi++) {
+#pragma unroll
+        for (int i = 0; i < 4; i++) {
+            const int row = rowBase + gi * (BM / GM) + ty * 4 + i;
+            if (row >= M) continue;
+#pragma unroll
+            for (int gj = 0; gj < GN; gj++) {
+                const int col = colBase + gj * (BN / GN) + tx * 4;
+                const float* v = &acc[gi * 4 + i][gj * 4];
+                float* dst = &C[(size_t)row * N + col];
+                if (alignB && col + 3 < N) {
+                    *reinterpret_cast<float4*>(dst) = make_float4(v[0], v[1], v[2], v[3]);
+                } else {
+#pragma unroll
+                    for (int j = 0; j < 4; j++)
+                        if (col + j < N) dst[j] = v[j];
+                }
+            }
+        }
+    }
+}
+
+template <int BM, int BN, int BK, int TM, int TN>
+static void launch_vec(const float* dA, const float* dB, float* dC, int M, int K, int N) {
+    dim3 block((BM / TM) * (BN / TN));
+    dim3 grid((N + BN - 1) / BN, (M + BM - 1) / BM);
+    matmul_vec<BM, BN, BK, TM, TN><<<grid, block>>>(dA, dB, dC, M, K, N);
+}
+
 // The four tiled variants (tiled, padded, tiled_ta, padded_ta) use --tile.
-static bool is_tiled(const std::string& impl) { return impl != "cpu" && impl != "naive" && impl != "regtile"; }
+static bool is_tiled(const std::string& impl) {
+    return impl == "tiled" || impl == "padded" || impl == "tiled_ta" || impl == "padded_ta";
+}
+
+// ---- External reference: cuBLAS SGEMM ---------------------------------------
+// NOT one of the required implementations; only a performance yardstick.
+// cuBLAS is column-major. A row-major M x N matrix C has the same bytes as a
+// column-major N x M matrix, i.e. C^T. Since C^T = B^T A^T, and row-major B and
+// A are column-major B^T and A^T, one column-major SGEMM computes row-major C:
+//     C^T (N x M) = B^T (N x K) * A^T (K x M),  leading dimensions N, K, N.
+// The handle is created once, before any timing, like the CUDA context.
+// Default math mode: plain FP32 (the T4 has no TF32; on newer GPUs cuBLAS only
+// uses TF32 when asked to).
+static cublasHandle_t g_cublas = nullptr;
+
+static void launch_cublas(const float* dA, const float* dB, float* dC, int M, int K, int N) {
+    const float alpha = 1.0f, beta = 0.0f;
+    CUBLAS_CHECK(cublasSgemm(g_cublas, CUBLAS_OP_N, CUBLAS_OP_N, N, M, K, &alpha, dB, N, dA, K, &beta, dC, N));
+}
 static int pad_of(const std::string& impl) { return (impl == "padded" || impl == "padded_ta") ? 1 : 0; }
 
 template <int PAD, bool TA>
@@ -304,6 +476,12 @@ static void launch_kernel(const std::string& impl, int tile, const float* dA, co
         dim3 block(RT_BN / RT_TN, RT_BM / RT_TM);  // 16 x 16
         dim3 grid((N + RT_BN - 1) / RT_BN, (M + RT_BM - 1) / RT_BM);
         matmul_regtile<<<grid, block>>>(dA, dB, dC, M, K, N);
+    } else if (impl == "cublas") {
+        launch_cublas(dA, dB, dC, M, K, N);
+    } else if (impl == "vec") {
+        launch_vec<64, 64, 8, 4, 4>(dA, dB, dC, M, K, N);
+    } else if (impl == "vec128") {
+        launch_vec<128, 128, 8, 8, 8>(dA, dB, dC, M, K, N);
     } else {
         die("implementation '%s' has no GPU kernel", impl.c_str());
     }
@@ -321,7 +499,8 @@ static GpuRunTimes gpu_run(const std::string& impl, int tile, const float* hA, c
     const size_t bytesB = (size_t)K * N * sizeof(float);
     const size_t bytesC = (size_t)M * N * sizeof(float);
 
-    const int blockY = (impl == "regtile") ? RT_BM : is_tiled(impl) ? tile : NAIVE_BLOCK;
+    const int blockY = (impl == "regtile" || impl == "vec") ? 64 : (impl == "vec128") ? 128
+                     : is_tiled(impl) ? tile : NAIVE_BLOCK;
     if ((M + blockY - 1) / blockY > 65535) die("M=%d is too large for this launch configuration", M);
 
     double t0 = now_ms();
@@ -388,9 +567,13 @@ int main(int argc, char** argv) {
             t.push_back(now_ms() - t0);
         }
         kernel_ms = e2e_ms = median(t);  // CPU: multiplication only, no transfers
-    } else {  // naive, tiled, padded (and experiments)
+    } else {  // all GPU implementations
         CUDA_CHECK(cudaFree(0));  // force context creation; clear error if no GPU
         if (is_tiled(a.impl)) check_tile_resources(a.tile, pad_of(a.impl));
+        if (a.impl == "cublas") {
+            CUBLAS_CHECK(cublasCreate(&g_cublas));
+            CUBLAS_CHECK(cublasSetMathMode(g_cublas, CUBLAS_DEFAULT_MATH));
+        }
         trials_used = a.bench ? a.trials : 1;
         if (a.bench)
             for (int i = 0; i < a.warmup; i++) gpu_run(a.impl, a.tile, p.A.data(), p.B.data(), C.data(), M, K, N);
@@ -402,13 +585,17 @@ int main(int argc, char** argv) {
         }
         kernel_ms = median(tk);
         e2e_ms = median(te);
+        if (g_cublas) CUBLAS_CHECK(cublasDestroy(g_cublas));
     }
 
     if (!a.output.empty()) write_output(a.output, C.data(), C.size());
 
     const double kernel_gflops = flops / (kernel_ms * 1e6);
     const double e2e_gflops = flops / (e2e_ms * 1e6);
-    const std::string tileStr = is_tiled(a.impl) ? std::to_string(a.tile) : (a.impl == "regtile") ? "64x64" : "NA";
+    const std::string tileStr = is_tiled(a.impl)                         ? std::to_string(a.tile)
+                                : (a.impl == "regtile" || a.impl == "vec") ? "64x64"
+                                : (a.impl == "vec128")                     ? "128x128"
+                                                                           : "NA";
     if (a.bench) {
         // impl,M,K,N,tile,trials,kernel_ms,e2e_ms,kernel_gflops,e2e_gflops
         printf("%s,%d,%d,%d,%s,%d,%.4f,%.4f,%.2f,%.2f\n", a.impl.c_str(), M, K, N, tileStr.c_str(),

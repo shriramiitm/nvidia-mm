@@ -3,7 +3,9 @@
 
 Usage:  python3 scripts/plot_results.py [results]      -> results/plots/*.svg
 
-Inputs:  results/results.csv           (scripts/bench.sh)
+Inputs (missing files or implementations are skipped):
+         results/results.csv           (scripts/bench.sh)
+         results/edge_sweep.csv        (scripts/edge_sweep.sh)
          results/profile_summary.csv   (scripts/summarize_profile.py)
 
 Every mark carries an SVG <title>, so hovering a bar or point in a browser shows
@@ -14,14 +16,36 @@ import os
 import sys
 from html import escape
 
-# Validated categorical slots (light surface): blue, orange, aqua.
-S1, S2, S3 = "#2a78d6", "#eb6834", "#1baf7a"
+# Validated categorical slots in fixed order (light surface): blue, orange, aqua, yellow, magenta.
+S1, S2, S3, S4, S5 = "#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4"
 SEQ = ["#9cc3ef", "#4f93e0", "#1d5aa6"]  # one hue, light -> dark (ordinal: tile 8 / 16 / 32)
 SURFACE, INK, INK2, MUTED, GRID = "#fcfcfb", "#0b0b0b", "#52514e", "#8a8984", "#e6e5e1"
 FONT = "font-family='Helvetica, Arial, sans-serif'"
 
-SHAPES = [(256, 256, 256), (1024, 1024, 1024), (4096, 4096, 4096), (2048, 512, 4096), (1000, 513, 769)]
-LABEL = {s: f"{s[0]}×{s[1]}×{s[2]}" for s in SHAPES}
+
+def label(s):
+    return f"{s[0]}×{s[1]}×{s[2]}"
+
+
+def load(path):
+    """{(impl, tile, (M, K, N)): {...}} plus the shapes in file order."""
+    t, shapes = {}, []
+    if not os.path.exists(path):
+        return t, shapes
+    for r in csv.DictReader(open(path)):
+        s = (int(r["M"]), int(r["K"]), int(r["N"]))
+        if s not in shapes:
+            shapes.append(s)
+        t[(r["impl"], r["tile"], s)] = {k: float(r[k]) for k in ("kernel_ms", "e2e_ms", "kernel_gflops")}
+    return t, shapes
+
+
+# (legend label, impl, tile column value, colour) for the main comparison
+MAIN = [("naive", "naive", "NA", S1), ("tiled (T=32)", "tiled", "32", S2), ("padded (T=32)", "padded", "32", S3),
+        ("regtile", "regtile", "64x64", S4), ("cuBLAS (reference)", "cublas", "NA", S5)]
+# the optional extensions: register tiling, then float4 access, then the bigger tile
+EXT = [("tiled (T=32)", "tiled", "32", S1), ("regtile", "regtile", "64x64", S2), ("vec (64×64, 4×4)", "vec", "64x64", S3),
+       ("vec128 (128×128, 8×8)", "vec128", "128x128", S4), ("cuBLAS (reference)", "cublas", "NA", S5)]
 
 
 def nice_max(v):
@@ -99,56 +123,121 @@ def grouped_bars(path, title, subtitle, groups, series, values, unit, fmt="{:.0f
     svg.save(path)
 
 
+def series_values(t, shapes, spec, field="kernel_gflops"):
+    """Keep only series that have data; values keyed by (shape label, legend label)."""
+    vals, used = {}, []
+    for name, impl, tile, color in spec:
+        got = False
+        for sh in shapes:
+            r = t.get((impl, tile, sh))
+            if r:
+                vals[(label(sh), name)] = r[field]
+                got = True
+        if got:
+            used.append((name, color))
+    return vals, used
+
+
 def main():
     root = sys.argv[1] if len(sys.argv) > 1 else "results"
     out = os.path.join(root, "plots")
     os.makedirs(out, exist_ok=True)
+    written = []
 
-    t = {}
-    for r in csv.DictReader(open(os.path.join(root, "results.csv"))):
-        s = (int(r["M"]), int(r["K"]), int(r["N"]))
-        t[(r["impl"], r["tile"], s)] = {k: float(r[k]) for k in ("kernel_ms", "e2e_ms", "kernel_gflops")}
+    t, shapes = load(os.path.join(root, "results.csv"))
+    groups = [label(sh) for sh in shapes]
 
-    groups = [LABEL[s] for s in SHAPES]
+    if t:
+        # 1. All implementations, kernel-only throughput
+        vals, used = series_values(t, shapes, MAIN)
+        cpu = ", ".join(f"{t[('cpu', 'NA', sh)]['kernel_gflops']:.1f}" for sh in shapes if ("cpu", "NA", sh) in t)
+        sub = "GFLOP/s = 2·M·N·K / kernel time, median of 20."
+        if cpu:
+            sub += f" Single-thread CPU for scale: {cpu} GFLOP/s."
+        grouped_bars(os.path.join(out, "gflops_by_impl.svg"), "Kernel throughput by implementation",
+                     sub, groups, used, vals, "GFLOP/s")
+        written.append("gflops_by_impl.svg")
 
-    # 1. The required versions, kernel-only throughput
-    series = [("naive", S1), ("tiled (T=32)", S2), ("padded (T=32)", S3)]
-    key = {"naive": ("naive", "NA"), "tiled (T=32)": ("tiled", "32"), "padded (T=32)": ("padded", "32")}
-    vals = {(LABEL[s], n): t[key[n] + (s,)]["kernel_gflops"] for s in SHAPES for n, _ in series}
-    cpu = ", ".join(f"{t[('cpu', 'NA', s)]['kernel_gflops']:.1f}" for s in SHAPES)
-    grouped_bars(os.path.join(out, "gflops_by_impl.svg"), "Kernel throughput by implementation (Tesla T4)",
-                 f"GFLOP/s = 2·M·N·K / kernel time, median of 20. Single-thread CPU for scale: {cpu} GFLOP/s.",
-                 groups, series, vals, "GFLOP/s")
+        # 2. Tile-size comparison for the tiled kernel
+        spec = [("naive", "naive", "NA", MUTED)] + [(f"T = {T}", "tiled", T, c) for T, c in zip(("8", "16", "32"), SEQ)]
+        vals, used = series_values(t, shapes, spec)
+        if len(used) > 1:
+            grouped_bars(os.path.join(out, "tile_sizes.svg"), "Tiled kernel: tile size comparison",
+                         "Kernel-only GFLOP/s for tile sizes 8, 16 and 32, with the naive kernel for reference.",
+                         groups, used, vals, "GFLOP/s")
+            written.append("tile_sizes.svg")
 
-    # 2. Tile-size comparison for the tiled kernel
-    series = [("T = 8", SEQ[0]), ("T = 16", SEQ[1]), ("T = 32", SEQ[2])]
-    vals = {(LABEL[s], f"T = {T}"): t[("tiled", T, s)]["kernel_gflops"] for s in SHAPES for T in ("8", "16", "32")}
-    vals.update({(LABEL[s], "naive"): t[("naive", "NA", s)]["kernel_gflops"] for s in SHAPES})
-    grouped_bars(os.path.join(out, "tile_sizes.svg"), "Tiled kernel: tile size comparison",
-                 "Kernel-only GFLOP/s. T = 32 is fastest on every shape; T = 8 is slower than naive on 4096³ and 1000×513×769.",
-                 groups, [("naive", MUTED)] + series, vals, "GFLOP/s")
+        # 3. Padding effect at T = 32
+        spec = [("tiled", "tiled", "32", S1), ("padded", "padded", "32", S2),
+                ("tiled_ta (32-way store conflicts)", "tiled_ta", "32", S3)]
+        vals, used = series_values(t, shapes, spec)
+        if len(used) > 1:
+            grouped_bars(os.path.join(out, "padding_effect.svg"), "Does padding help? (T = 32)",
+                         "padded = tiled + [T][T+1] shared arrays. padded_ta (not shown) performs the same as padded.",
+                         groups, used, vals, "GFLOP/s")
+            written.append("padding_effect.svg")
 
-    # 3. Padding effect: tiled vs padded, and the transposed-A experiment, T = 32
-    series = [("tiled", S1), ("padded", S2), ("tiled_ta (32-way store conflicts)", S3)]
-    vals = {}
-    for s in SHAPES:
-        vals[(LABEL[s], "tiled")] = t[("tiled", "32", s)]["kernel_gflops"]
-        vals[(LABEL[s], "padded")] = t[("padded", "32", s)]["kernel_gflops"]
-        vals[(LABEL[s], "tiled_ta (32-way store conflicts)")] = t[("tiled_ta", "32", s)]["kernel_gflops"]
-    grouped_bars(os.path.join(out, "padding_effect.svg"), "Does padding help? (T = 32)",
-                 "Padding costs the plain tiled kernel 17–24% of its GFLOP/s. padded_ta (not shown) performs the same as padded.",
-                 groups, series, vals, "GFLOP/s")
+        # 4. Kernel share of end-to-end time (best hand-written kernel available)
+        best = "regtile" if any(k[0] == "regtile" for k in t) else "tiled"
+        tile = "64x64" if best == "regtile" else "32"
+        vals = {(label(sh), "kernel share"): 100 * t[(best, tile, sh)]["kernel_ms"] / t[(best, tile, sh)]["e2e_ms"]
+                for sh in shapes if (best, tile, sh) in t}
+        if vals:
+            grouped_bars(os.path.join(out, "kernel_share_e2e.svg"), "Share of end-to-end GPU time spent in the kernel",
+                         f"{best}{'' if best == 'regtile' else ', T = 32'}. The rest is cudaMalloc, host↔device copies and cudaFree.",
+                         groups, [("kernel share", S1)], vals, "% of end-to-end time", "{:.0f}%")
+            written.append("kernel_share_e2e.svg")
 
-    # 4. Kernel share of end-to-end time (tiled, T = 32)
-    vals = {(LABEL[s], "kernel share"): 100 * t[("tiled", "32", s)]["kernel_ms"] / t[("tiled", "32", s)]["e2e_ms"]
-            for s in SHAPES}
-    grouped_bars(os.path.join(out, "kernel_share_e2e.svg"), "Share of end-to-end GPU time spent in the kernel",
-                 "tiled, T = 32. The rest is cudaMalloc, host↔device copies and cudaFree.",
-                 groups, [("kernel share", S1)], vals, "% of end-to-end time", "{:.0f}%")
+        # 4b. Extensions: register tiling and vectorized access
+        vals, used = series_values(t, shapes, EXT)
+        if any(n.startswith(("regtile", "vec")) for n, _ in used):
+            grouped_bars(os.path.join(out, "extensions.svg"), "Register tiling and vectorized access",
+                         "Kernel-only GFLOP/s. vec = regtile + float4 loads/stores (same tiles); vec128 also doubles the tiles.",
+                         groups, used, vals, "GFLOP/s")
+            written.append("extensions.svg")
 
-    # 5. Kernel time vs shared-memory wavefronts (profiler, 1024³)
-    prof = [r for r in csv.DictReader(open(os.path.join(root, "profile_summary.csv")))
-            if r["M"] == "1024" and r["impl"] != "naive"]
+        # 5. Gap to cuBLAS: each kernel's throughput as % of cuBLAS
+        if any(k[0] == "cublas" for k in t):
+            vals, used = {}, []
+            pct = [(n, i, tl, c) for (n, i, tl, _), c in zip([MAIN[0]] + EXT[:4], (S1, S2, S3, S4, S5))]
+            for name, impl, tl, color in pct:
+                got = False
+                for sh in shapes:
+                    r, c = t.get((impl, tl, sh)), t.get(("cublas", "NA", sh))
+                    if r and c:
+                        vals[(label(sh), name)] = 100 * r["kernel_gflops"] / c["kernel_gflops"]
+                        got = True
+                if got:
+                    used.append((name, color))
+            grouped_bars(os.path.join(out, "percent_of_cublas.svg"), "Gap to cuBLAS",
+                         "Kernel-only throughput as a percentage of cuBLAS SGEMM on the same GPU and shape.",
+                         groups, used, vals, "% of cuBLAS", "{:.0f}%")
+            written.append("percent_of_cublas.svg")
+
+    # 6. Edge-effect sweep
+    e, eshapes = load(os.path.join(root, "edge_sweep.csv"))
+    if e:
+        spec = [m for m in MAIN]
+        spec[1] = ("tiled (T=32)", "tiled", "32", S2)
+        spec[2] = ("padded (T=32)", "padded", "32", S3)
+        vals, used = series_values(e, eshapes, spec)
+        grouped_bars(os.path.join(out, "edge_sweep.svg"), "Edge effects: n − 1, n, n + 1",
+                     "Kernel-only GFLOP/s for square shapes around multiples of every tile size (32) and block (64).",
+                     [label(sh) for sh in eshapes], used, vals, "GFLOP/s")
+        written.append("edge_sweep.svg")
+
+    # 7. Kernel time vs shared-memory wavefronts (profiler, 1024³)
+    ps = os.path.join(root, "profile_summary.csv")
+    prof = [r for r in csv.DictReader(open(ps)) if r["M"] == "1024" and r["impl"] in
+            ("tiled", "padded", "padded_ta", "tiled_ta") and r.get("shld_wavefronts")] if os.path.exists(ps) else []
+    if prof:
+        plot_wavefronts(prof, os.path.join(out, "time_vs_wavefronts.svg"))
+        written.append("time_vs_wavefronts.svg")
+
+    print(f"wrote {out}/: " + " ".join(written))
+
+
+def plot_wavefronts(prof, path):
     W, H, L, R, T, B = 760, 420, 64, 24, 92, 56
     svg = Svg(W, H, "Kernel time follows shared-memory wavefronts (1024³, Nsight Compute)",
               "Each point is one kernel; label = tile size. Dashed line: 100 ns per million wavefronts. ncu runs at base clocks.")
@@ -177,13 +266,12 @@ def main():
     svg.raw(f"<line x1='{L}' x2='{W - R}' y1='{Y(0):.1f}' y2='{Y(0):.1f}' stroke='{MUTED}'/>")
     for name, color, impls in groups3:
         for x, yv, r in pts:
-            if r["impl"] in impls and not (r["impl"] == "padded_ta"):  # padded_ta sits exactly on padded
+            if r["impl"] in impls and r["impl"] != "padded_ta":  # padded_ta sits exactly on padded
                 tip = f"{r['impl']} T={r['tile']}: {x:.1f} M wavefronts, {yv:.2f} ms"
                 svg.raw(f"<circle cx='{X(x):.1f}' cy='{Y(yv):.1f}' r='5' fill='{color}' stroke='{SURFACE}' "
                         f"stroke-width='2'><title>{escape(tip)}</title></circle>")
                 svg.text(X(x) + 8, Y(yv) + 4, f"T={r['tile']}", 10, INK2)
-    svg.save(os.path.join(out, "time_vs_wavefronts.svg"))
-    print(f"wrote {out}/: gflops_by_impl.svg tile_sizes.svg padding_effect.svg kernel_share_e2e.svg time_vs_wavefronts.svg")
+    svg.save(path)
 
 
 if __name__ == "__main__":

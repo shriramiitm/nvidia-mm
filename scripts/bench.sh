@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # Benchmark the required shapes; writes results/results.csv and results/env.txt.
 #   bash scripts/bench.sh
-#   IMPLS="cpu naive tiled padded tiled_ta padded_ta" TILES="8 16 32" TRIALS=20 bash scripts/bench.sh
+#   IMPLS="naive tiled" TILES="16 32" TRIALS=20 bash scripts/bench.sh
+#   SHAPE6="256 16384 256" bash scripts/bench.sh     # adds the instructor-approved 6th shape (M K N)
 set -eu
 cd "$(dirname "$0")/.."   # run from the repo root
-IMPLS=${IMPLS:-"cpu naive tiled padded tiled_ta padded_ta regtile"}
+IMPLS=${IMPLS:-"cpu naive tiled padded tiled_ta padded_ta regtile vec vec128 cublas"}
+SHAPE6=${SHAPE6:-}   # "M K N" of the instructor-approved shape; empty = skip
 TILES=${TILES:-"8 16 32"}
 TRIALS=${TRIALS:-20}
 WARMUP=${WARMUP:-3}
@@ -25,8 +27,8 @@ SHAPES=(
   "4096 4096 4096"
   "2048 512 4096"
   "1000 513 769"
-  # add your instructor-approved shape here
 )
+if [ -n "$SHAPE6" ]; then SHAPES+=("$SHAPE6"); fi   # instructor-approved shape
 
 echo "impl,M,K,N,tile,trials,kernel_ms,e2e_ms,kernel_gflops,e2e_gflops" >results/results.csv
 for s in "${SHAPES[@]}"; do
